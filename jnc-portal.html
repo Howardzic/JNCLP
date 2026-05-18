@@ -603,8 +603,16 @@
     }
 
     .svc-icon {
-      font-size: 26px;
-      margin-bottom: 18px
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center
+    }
+    .svc-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--gold);
+      stroke-width: 1.25;
+      fill: none
     }
 
     .svc-name {
@@ -730,10 +738,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
       flex-shrink: 0;
       margin-top: 2px;
       transition: border-color .3s
+    }
+    .feat-ico svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--gold);
+      stroke-width: 1.5;
+      fill: none
     }
 
     .feat-item:hover .feat-ico {
@@ -1438,9 +1452,18 @@
     }
 
     .dash-nav-ico {
-      font-size: 14px;
       width: 18px;
-      text-align: center
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+    .dash-nav-ico svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none
     }
 
     .dash-content {
@@ -1636,9 +1659,17 @@
     }
 
     .redeem-empty-ico {
-      font-size: 40px;
       margin-bottom: 16px;
-      opacity: .4
+      opacity: .4;
+      display: flex;
+      justify-content: center
+    }
+    .redeem-empty-ico svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--gold);
+      stroke-width: 1.25;
+      fill: none
     }
 
     .redeem-empty-title {
@@ -1731,8 +1762,15 @@
     }
 
     .mat-card-ico {
-      font-size: 24px;
-      margin-bottom: 14px
+      margin-bottom: 14px;
+      display: flex
+    }
+    .mat-card-ico svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--gold);
+      stroke-width: 1.25;
+      fill: none
     }
 
     .mat-card-name {
@@ -2176,8 +2214,17 @@
     }
 
     .dtb-ico {
-      font-size: 18px;
-      line-height: 1
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px
+    }
+    .dtb-ico svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none
     }
 
     .dtb-lbl {
@@ -2528,19 +2575,19 @@
   <!-- MOBILE DASHBOARD TAB BAR -->
   <div class="dash-tab-bar" id="dash-tab-bar">
     <button class="dtb-item active" onclick="switchPanel('pts');setTabActive(this)">
-      <span class="dtb-ico">✦</span>
+      <span class="dtb-ico"><i data-lucide="gem"></i></span>
       <span class="dtb-lbl"><span class="t" data-key="dash_pts"></span></span>
     </button>
     <button class="dtb-item" onclick="switchPanel('redeem');setTabActive(this)">
-      <span class="dtb-ico">🎁</span>
+      <span class="dtb-ico"><i data-lucide="gift"></i></span>
       <span class="dtb-lbl"><span class="t" data-key="dash_redeem"></span></span>
     </button>
     <button class="dtb-item" id="tab-mats" style="display:none" onclick="switchPanel('mats');setTabActive(this)">
-      <span class="dtb-ico">📦</span>
+      <span class="dtb-ico"><i data-lucide="package"></i></span>
       <span class="dtb-lbl"><span class="t" data-key="dash_mats"></span></span>
     </button>
     <button class="dtb-item" onclick="logout()">
-      <span class="dtb-ico">↩</span>
+      <span class="dtb-ico"><i data-lucide="log-out"></i></span>
       <span class="dtb-lbl"><span class="t" data-key="btn_logout"></span></span>
     </button>
   </div>
@@ -2651,42 +2698,42 @@
       <div class="services-grid">
         <div class="svc-card reveal">
           <div class="svc-n">01</div>
-          <div class="svc-icon">🌸</div>
+          <div class="svc-icon"><i data-lucide="sparkles"></i></div>
           <div class="svc-name"><span class="t" data-key="svc1_name"></span></div>
           <div class="svc-jp">エスコートサービス</div>
           <p class="svc-desc"><span class="t" data-key="svc1_desc"></span></p>
         </div>
         <div class="svc-card reveal reveal-d1">
           <div class="svc-n">02</div>
-          <div class="svc-icon">🏮</div>
+          <div class="svc-icon"><i data-lucide="crown"></i></div>
           <div class="svc-name"><span class="t" data-key="svc2_name"></span></div>
           <div class="svc-jp">プライベートクラブ</div>
           <p class="svc-desc"><span class="t" data-key="svc2_desc"></span></p>
         </div>
         <div class="svc-card reveal reveal-d2">
           <div class="svc-n">03</div>
-          <div class="svc-icon">♨️</div>
+          <div class="svc-icon"><i data-lucide="droplets"></i></div>
           <div class="svc-name"><span class="t" data-key="svc3_name"></span></div>
           <div class="svc-jp">温泉セラピー</div>
           <p class="svc-desc"><span class="t" data-key="svc3_desc"></span></p>
         </div>
         <div class="svc-card reveal reveal-d1">
           <div class="svc-n">04</div>
-          <div class="svc-icon">🍶</div>
+          <div class="svc-icon"><i data-lucide="utensils"></i></div>
           <div class="svc-name"><span class="t" data-key="svc4_name"></span></div>
           <div class="svc-jp">ディナー同伴</div>
           <p class="svc-desc"><span class="t" data-key="svc4_desc"></span></p>
         </div>
         <div class="svc-card reveal reveal-d2">
           <div class="svc-n">05</div>
-          <div class="svc-icon">🎎</div>
+          <div class="svc-icon"><i data-lucide="scroll"></i></div>
           <div class="svc-name"><span class="t" data-key="svc5_name"></span></div>
           <div class="svc-jp">和服体験</div>
           <p class="svc-desc"><span class="t" data-key="svc5_desc"></span></p>
         </div>
         <div class="svc-card reveal reveal-d3">
           <div class="svc-n">06</div>
-          <div class="svc-icon">🌙</div>
+          <div class="svc-icon"><i data-lucide="moon"></i></div>
           <div class="svc-name"><span class="t" data-key="svc6_name"></span></div>
           <div class="svc-jp">VIPナイト</div>
           <p class="svc-desc"><span class="t" data-key="svc6_desc"></span></p>
@@ -2729,28 +2776,28 @@
         </div>
         <div class="feat-list">
           <div class="feat-item reveal">
-            <div class="feat-ico">🔒</div>
+            <div class="feat-ico"><i data-lucide="shield"></i></div>
             <div>
               <h3><span class="t" data-key="feat1_name"></span></h3>
               <p><span class="t" data-key="feat1_desc"></span></p>
             </div>
           </div>
           <div class="feat-item reveal reveal-d1">
-            <div class="feat-ico">⭐</div>
+            <div class="feat-ico"><i data-lucide="award"></i></div>
             <div>
               <h3><span class="t" data-key="feat2_name"></span></h3>
               <p><span class="t" data-key="feat2_desc"></span></p>
             </div>
           </div>
           <div class="feat-item reveal reveal-d2">
-            <div class="feat-ico">🌐</div>
+            <div class="feat-ico"><i data-lucide="globe"></i></div>
             <div>
               <h3><span class="t" data-key="feat3_name"></span></h3>
               <p><span class="t" data-key="feat3_desc"></span></p>
             </div>
           </div>
           <div class="feat-item reveal reveal-d3">
-            <div class="feat-ico">💎</div>
+            <div class="feat-ico"><i data-lucide="gem"></i></div>
             <div>
               <h3><span class="t" data-key="feat4_name"></span></h3>
               <p><span class="t" data-key="feat4_desc"></span></p>
@@ -2769,19 +2816,19 @@
       <div class="services-grid reveal">
         <div class="svc-card">
           <div class="svc-n">01</div>
-          <div class="svc-icon">💬</div>
+          <div class="svc-icon"><i data-lucide="message-circle"></i></div>
           <div class="svc-name"><span class="t" data-key="flow1_name"></span></div>
           <p class="svc-desc"><span class="t" data-key="flow1_desc"></span></p>
         </div>
         <div class="svc-card reveal-d1">
           <div class="svc-n">02</div>
-          <div class="svc-icon">🤝</div>
+          <div class="svc-icon"><i data-lucide="check-circle"></i></div>
           <div class="svc-name"><span class="t" data-key="flow2_name"></span></div>
           <p class="svc-desc"><span class="t" data-key="flow2_desc"></span></p>
         </div>
         <div class="svc-card reveal-d2">
           <div class="svc-n">03</div>
-          <div class="svc-icon">🥂</div>
+          <div class="svc-icon"><i data-lucide="star"></i></div>
           <div class="svc-name"><span class="t" data-key="flow3_name"></span></div>
           <p class="svc-desc"><span class="t" data-key="flow3_desc"></span></p>
         </div>
@@ -3050,18 +3097,13 @@
           <div class="dash-user-name" id="dash-uname">—</div>
           <div class="dash-user-role" id="dash-urole">MEMBER</div>
         </div>
-        <div class="dash-nav-item active" onclick="switchPanel('pts')"><span class="dash-nav-ico">✦</span><span
-            class="t" data-key="dash_pts"></span></div>
-        <div class="dash-nav-item" onclick="switchPanel('redeem')"><span class="dash-nav-ico">🎁</span><span class="t"
-            data-key="dash_redeem"></span></div>
-        <div class="dash-nav-item" id="nav-mats" style="display:none" onclick="switchPanel('mats')"><span
-            class="dash-nav-ico">📦</span><span class="t" data-key="dash_mats"></span></div>
-        <div class="dash-nav-item" onclick="switchPanel('pw')"><span class="dash-nav-ico">🔑</span>更改密碼</div>
+        <div class="dash-nav-item active" onclick="switchPanel('pts')"><span class="dash-nav-ico"><i data-lucide="gem"></i></span><span class="t" data-key="dash_pts"></span></div>
+        <div class="dash-nav-item" onclick="switchPanel('redeem')"><span class="dash-nav-ico"><i data-lucide="gift"></i></span><span class="t" data-key="dash_redeem"></span></div>
+        <div class="dash-nav-item" id="nav-mats" style="display:none" onclick="switchPanel('mats')"><span class="dash-nav-ico"><i data-lucide="package"></i></span><span class="t" data-key="dash_mats"></span></div>
+        <div class="dash-nav-item" onclick="switchPanel('pw')"><span class="dash-nav-ico"><i data-lucide="lock"></i></span>更改密碼</div>
         <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid rgba(184,150,90,.1)">
-          <div class="dash-nav-item" onclick="goToSite()" style="opacity:.7"><span class="dash-nav-ico">←</span>回到主頁
-          </div>
-          <div class="dash-nav-item" onclick="logout()"><span class="dash-nav-ico">↩</span><span class="t"
-              data-key="btn_logout"></span></div>
+          <div class="dash-nav-item" onclick="goToSite()" style="opacity:.7"><span class="dash-nav-ico"><i data-lucide="arrow-left"></i></span>回到主頁</div>
+          <div class="dash-nav-item" onclick="logout()"><span class="dash-nav-ico"><i data-lucide="log-out"></i></span><span class="t" data-key="btn_logout"></span></div>
         </div>
       </aside>
       <main class="dash-content">
@@ -3100,7 +3142,7 @@
         <div class="dash-panel" id="panel-redeem">
           <div class="dash-title"><span class="t" data-key="dash_redeem_title"></span></div>
           <div class="redeem-empty">
-            <div class="redeem-empty-ico">🎁</div>
+            <div class="redeem-empty-ico"><i data-lucide="gift"></i></div>
             <div class="redeem-empty-title"><span class="t" data-key="redeem_soon_title"></span></div>
             <div class="redeem-empty-desc"><span class="t" data-key="redeem_soon_desc"></span></div>
           </div>
@@ -3239,6 +3281,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
   <script>
     // ══════════════════════════════════════════
@@ -3781,7 +3824,7 @@
         matsContent.innerHTML = mats.length
           ? `<div class="mat-grid">${mats.map(m => `
           <div class="mat-card" ${m.url ? `onclick="window.open('${m.url}','_blank')"` : ''}>
-            <div class="mat-card-ico">📦</div>
+            <div class="mat-card-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div>
             <div class="mat-card-name">${m.name}</div>
             <div class="mat-card-desc">${m.desc}</div>
             <span class="mat-card-tag ${m.status !== 'active' ? 'coming' : ''}">${m.status === 'active' ? d.available : d.coming}</span>
@@ -3937,6 +3980,7 @@
     // ══════════════════════════════════════════
     renderText();
     updateMobileLangBtns('zh');
+    if (window.lucide) lucide.createIcons();
   </script>
 </body>
 
