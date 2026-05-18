@@ -3651,7 +3651,14 @@
           const affEmailEl = document.getElementById('aff-email');
           if (affEmailEl && !affEmailEl.value) affEmailEl.value = email;
           // Only jump to dashboard if user explicitly just logged in/registered
-          if (justAuthenticated) { justAuthenticated = false; openDash(); }
+          if (justAuthenticated) {
+            justAuthenticated = false;
+            openDash();
+          } else {
+            // Re-render dashboard in real-time (e.g. admin approves affiliate while portal is open)
+            const dashEl = document.getElementById('dashboard');
+            if (dashEl && dashEl.style.display !== 'none') renderDash();
+          }
         });
       } else {
         currentUser = null;
