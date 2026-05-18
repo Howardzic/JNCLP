@@ -283,8 +283,8 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
     <div class="login-logo">JNC</div>
     <div class="login-sub">ADMIN PORTAL — 管理後台</div>
     <div class="login-err" id="login-err">帳號或密碼錯誤，請重試。</div>
-    <div class="f-group"><label class="f-label">管理者帳號</label><input class="f-input" id="a-email" type="email" placeholder="admin@jnc.jp" value="admin@jnc.jp"></div>
-    <div class="f-group"><label class="f-label">密碼</label><input class="f-input" id="a-pw" type="password" placeholder="••••••••" value="Sakura@Admin2024"></div>
+    <div class="f-group"><label class="f-label">管理者帳號</label><input class="f-input" id="a-email" type="email" placeholder="admin@jnc.jp"></div>
+    <div class="f-group"><label class="f-label">密碼</label><input class="f-input" id="a-pw" type="password" placeholder="••••••••"></div>
     <button class="f-btn-full" onclick="adminLogin()">進入管理後台</button>
   </div>
 </div>
@@ -444,116 +444,139 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 
 <div id="toast"></div>
 
+<!-- Firebase SDK (compat v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
 // ══════════════════════════════════════════
-//  MOCK DATA  (mirrors portal)
+//  FIREBASE INIT
 // ══════════════════════════════════════════
-const USERS = {
-  'member@jnc.jp':{name:'山田 健一',role:'member',points:500,line:'@yamada_k',joined:'2024-11-20',
-    history:[
-      {date:'2024-12-01',desc:'諮詢費儲值',note:'管理者手動',type:'plus',amt:500,bal:500},
-      {date:'2024-11-20',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:0},
-    ]},
-  'promo1@jnc.jp':{name:'陳小明',role:'affiliate_pending',points:200,line:'@chenxm',joined:'2024-12-03',
-    affApp:{channel:'Instagram / Facebook',volume:'6–15',date:'2024-12-03'},
-    history:[{date:'2024-11-25',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:200}]},
-  'promo2@jnc.jp':{name:'Kim Jiyeon',role:'affiliate_approved',points:1800,line:'@kimjy',joined:'2024-11-18',
-    affApp:{channel:'YouTube / TikTok',volume:'16–30',date:'2024-11-18'},
-    history:[
-      {date:'2024-12-05',desc:'推廣佣金 — 3名客戶',note:'管理者核發',type:'plus',amt:1200,bal:1800},
-      {date:'2024-11-28',desc:'諮詢費儲值',note:'管理者手動',type:'plus',amt:500,bal:600},
-      {date:'2024-11-22',desc:'積分兌換折抵',note:'兌換申請',type:'minus',amt:100,bal:200},
-      {date:'2024-11-20',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:100},
-    ]},
-};
+firebase.initializeApp({
+  apiKey: "AIzaSyA_VWjIGwDUHUtY3_sWaiBwB1qHbkcNe4o",
+  authDomain: "jnclp-72ec4.firebaseapp.com",
+  projectId: "jnclp-72ec4",
+  storageBucket: "jnclp-72ec4.firebasestorage.app",
+  messagingSenderId: "662782169734",
+  appId: "1:662782169734:web:f883757697ced585507707"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
-const MATERIALS = [
-  {id:1,name:'心理測驗：適合風俗指數',type:'心理測驗',url:'https://example.com/quiz',desc:'讓潛在客戶透過趣味測驗了解自己，提升轉換率的最佳導流工具。',status:'active'},
-  {id:2,name:'日本夜間文化指南',type:'文章素材',url:'',desc:'專業圖文指南素材，即將提供給推廣者使用。',status:'coming'},
-  {id:3,name:'城市專屬落地頁 — 東京',type:'落地頁',url:'',desc:'東京專屬推廣落地頁，即將上線。',status:'coming'},
-];
-
+// ── local cache (populated by onSnapshot) ──
+let USERS    = {};
+let MATERIALS = [];
 let filterTerm = '';
 let filterRole = '';
 let currentDrawerEmail = null;
+let unsubUsers = null;
+let unsubMaterials = null;
 
 // ══════════════════════════════════════════
-//  LOGIN
+//  AUTH STATE
 // ══════════════════════════════════════════
-function adminLogin(){
-  const e = document.getElementById('a-email').value.trim();
-  const p = document.getElementById('a-pw').value;
-  if(e==='admin@jnc.jp' && p==='Sakura@Admin2024'){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('admin-shell').style.display='block';
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-shell').style.display  = 'block';
     initAdmin();
   } else {
-    document.getElementById('login-err').classList.add('show');
+    document.getElementById('admin-shell').style.display  = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    if (unsubUsers)     { unsubUsers();     unsubUsers     = null; }
+    if (unsubMaterials) { unsubMaterials(); unsubMaterials = null; }
   }
-}
-document.getElementById('a-pw').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
-
-function adminLogout(){
-  document.getElementById('admin-shell').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-}
+});
 
 // ══════════════════════════════════════════
-//  INIT
+//  LOGIN / LOGOUT
 // ══════════════════════════════════════════
-function initAdmin(){
-  renderOverview();
-  renderMembers();
-  renderReview();
-  renderMaterials();
+function adminLogin() {
+  const e   = document.getElementById('a-email').value.trim();
+  const p   = document.getElementById('a-pw').value;
+  const err = document.getElementById('login-err');
+  err.classList.remove('show');
+  auth.signInWithEmailAndPassword(e, p).catch(() => err.classList.add('show'));
+}
+document.getElementById('a-pw').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+
+function adminLogout() { auth.signOut(); }
+
+// ══════════════════════════════════════════
+//  INIT — subscribe Firestore real-time
+// ══════════════════════════════════════════
+function initAdmin() {
+  unsubUsers = db.collection('users').onSnapshot(snap => {
+    USERS = {};
+    snap.forEach(doc => { USERS[doc.id] = doc.data(); });
+    renderOverview();
+    renderMembers();
+    renderReview();
+    syncReviewBadge();
+    if (currentDrawerEmail && USERS[currentDrawerEmail]) openDrawer(currentDrawerEmail);
+  });
+
+  unsubMaterials = db.collection('materials').orderBy('order').onSnapshot(snap => {
+    MATERIALS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderMaterials();
+  });
 }
 
 // ══════════════════════════════════════════
 //  PAGE NAV
 // ══════════════════════════════════════════
-function goPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
-  document.getElementById('page-'+id).classList.add('show');
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById('page-' + id).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  const tabs = document.querySelectorAll('.atb-item');
+  tabs.forEach(b => b.classList.remove('active'));
+  const idx = { overview:0, members:1, review:2, materials:3 }[id];
+  if (idx !== undefined && tabs[idx]) tabs[idx].classList.add('active');
+  syncReviewBadge();
+}
+
+function goPageMob(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById('page-' + id).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.atb-item').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
 }
 
 // ══════════════════════════════════════════
 //  OVERVIEW
 // ══════════════════════════════════════════
-function renderOverview(){
+function renderOverview() {
   const emails = Object.keys(USERS);
-  document.getElementById('ov-total').textContent = emails.length;
-  const pending = emails.filter(e=>USERS[e].role==='affiliate_pending').length;
+  document.getElementById('ov-total').textContent   = emails.length;
+  const pending = emails.filter(e => USERS[e].role === 'affiliate_pending').length;
   document.getElementById('ov-pending').textContent = pending;
   document.getElementById('badge-review').textContent = pending;
-  const totalPts = emails.reduce((s,e)=>{
-    return s + (USERS[e].history||[]).filter(h=>h.type==='plus').reduce((a,h)=>a+h.amt,0);
-  },0);
-  document.getElementById('ov-pts').textContent = totalPts.toLocaleString();
-  document.getElementById('ov-affs').textContent = emails.filter(e=>USERS[e].role==='affiliate_approved').length;
+  const totalPts = emails.reduce((s, e) =>
+    s + (USERS[e].history || []).filter(h => h.type === 'plus').reduce((a, h) => a + h.amt, 0), 0);
+  document.getElementById('ov-pts').textContent  = totalPts.toLocaleString();
+  document.getElementById('ov-affs').textContent = emails.filter(e => USERS[e].role === 'affiliate_approved').length;
 
-  // recent table
-  const tbody = document.getElementById('recent-tbody');
-  tbody.innerHTML = emails.slice(0,4).map(email=>{
+  const sorted = [...emails].sort((a, b) => (USERS[b].joined || '').localeCompare(USERS[a].joined || ''));
+  document.getElementById('recent-tbody').innerHTML = sorted.slice(0, 4).map(email => {
     const u = USERS[email];
     return `<tr onclick="openDrawer('${email}')">
-      <td class="td-name">${u.name}</td>
-      <td class="td-email">${email}</td>
-      <td>${roleBadge(u.role)}</td>
-      <td class="td-pts">${u.points.toLocaleString()}</td>
+      <td class="td-name">${u.name}</td><td class="td-email">${email}</td>
+      <td>${roleBadge(u.role)}</td><td class="td-pts">${(u.points||0).toLocaleString()}</td>
       <td>${u.joined||'—'}</td>
       <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">查看</button></td>
     </tr>`;
   }).join('');
 
-  // quick pending
-  const pendingEmails = emails.filter(e=>USERS[e].role==='affiliate_pending');
+  const pendingEmails = emails.filter(e => USERS[e].role === 'affiliate_pending');
   const qp = document.getElementById('quick-pending');
-  if(!pendingEmails.length){
-    qp.innerHTML=`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">目前無待審核申請</div>`;
+  if (!pendingEmails.length) {
+    qp.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">目前無待審核申請</div>`;
   } else {
-    qp.innerHTML = pendingEmails.map(email=>{
+    qp.innerHTML = pendingEmails.map(email => {
       const u = USERS[email];
       return `<div class="review-card">
         <div class="rc-top"><div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>${roleBadge(u.role)}</div>
@@ -569,25 +592,23 @@ function renderOverview(){
 // ══════════════════════════════════════════
 //  MEMBERS TABLE
 // ══════════════════════════════════════════
-function renderMembers(){
-  const tbody = document.getElementById('members-tbody');
-  const emails = Object.keys(USERS).filter(e=>{
+function renderMembers() {
+  const tbody  = document.getElementById('members-tbody');
+  const emails = Object.keys(USERS).filter(e => {
     const u = USERS[e];
     const matchTerm = !filterTerm || u.name.toLowerCase().includes(filterTerm.toLowerCase()) || e.toLowerCase().includes(filterTerm.toLowerCase());
-    const matchRole = !filterRole || u.role===filterRole;
+    const matchRole = !filterRole || u.role === filterRole;
     return matchTerm && matchRole;
   });
-  if(!emails.length){
-    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">沒有符合的會員</td></tr>`;
+  if (!emails.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">沒有符合的會員</td></tr>`;
     return;
   }
-  tbody.innerHTML = emails.map(email=>{
+  tbody.innerHTML = emails.map(email => {
     const u = USERS[email];
     return `<tr onclick="openDrawer('${email}')">
-      <td class="td-name">${u.name}</td>
-      <td class="td-email">${email}</td>
-      <td>${roleBadge(u.role)}</td>
-      <td class="td-pts">${u.points.toLocaleString()}</td>
+      <td class="td-name">${u.name}</td><td class="td-email">${email}</td>
+      <td>${roleBadge(u.role)}</td><td class="td-pts">${(u.points||0).toLocaleString()}</td>
       <td style="font-size:12px;color:var(--muted)">${u.line||'—'}</td>
       <td style="font-size:12px;color:var(--muted)">${u.joined||'—'}</td>
       <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">詳情</button></td>
@@ -595,19 +616,20 @@ function renderMembers(){
   }).join('');
 }
 
-function filterMembers(v){filterTerm=v;renderMembers()}
-function filterByRole(v){filterRole=v;renderMembers()}
+function filterMembers(v) { filterTerm = v; renderMembers(); }
+function filterByRole(v)  { filterRole = v; renderMembers(); }
 
 // ══════════════════════════════════════════
 //  MEMBER DRAWER
 // ══════════════════════════════════════════
-function openDrawer(email){
+function openDrawer(email) {
   currentDrawerEmail = email;
   const u = USERS[email];
-  document.getElementById('dr-name').textContent = u.name;
+  if (!u) return;
+  document.getElementById('dr-name').textContent  = u.name;
   document.getElementById('dr-email').textContent = email;
 
-  const tlHtml = (u.history||[]).map(h=>`
+  const tlHtml = (u.history || []).map(h => `
     <div class="tl-item">
       <div class="tl-dot ${h.type}"></div>
       <div class="tl-date">${h.date}</div>
@@ -626,7 +648,6 @@ function openDrawer(email){
       </div>
       <div class="dr-field"><label>目前身份</label><div style="margin-top:6px">${roleBadge(u.role)}</div></div>
     </div>
-
     <div class="dr-section">
       <div class="dr-section-title">身份權限修改</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -635,98 +656,75 @@ function openDrawer(email){
         <button class="btn-sm btn-outline-red"  onclick="setRole('${email}','suspended')">停權</button>
       </div>
     </div>
-
     <div class="dr-section">
       <div class="dr-section-title">積分管理</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:28px;font-family:'Cormorant Garamond',serif;color:var(--gold)">${u.points.toLocaleString()}</span>
+        <span style="font-size:28px;font-family:'Cormorant Garamond',serif;color:var(--gold)">${(u.points||0).toLocaleString()}</span>
         <span style="font-size:12px;color:var(--muted)">目前積分</span>
       </div>
       <div class="pts-adjust">
         <div class="pts-adj-row">
-          <div>
-            <label class="f-label">操作</label>
+          <div><label class="f-label">操作</label>
             <select class="f-select" id="dr-pts-type" style="padding:8px">
-              <option value="plus">＋ 新增</option>
-              <option value="minus">－ 扣除</option>
+              <option value="plus">＋ 新增</option><option value="minus">－ 扣除</option>
             </select>
           </div>
-          <div>
-            <label class="f-label">點數</label>
+          <div><label class="f-label">點數</label>
             <input class="f-input" id="dr-pts-amt" type="number" min="1" placeholder="500" style="padding:8px">
           </div>
         </div>
-        <div style="margin-bottom:10px">
-          <label class="f-label">備註說明</label>
+        <div style="margin-bottom:10px"><label class="f-label">備註說明</label>
           <input class="f-input" id="dr-pts-note" type="text" placeholder="如：諮詢費儲值" style="padding:8px">
         </div>
         <button class="btn-sm btn-solid-gold" onclick="adjustPoints('${email}')">執行積分操作</button>
       </div>
     </div>
-
-    <div class="dr-section">
-      <div class="dr-section-title">積分明細</div>
-      ${tlHtml}
-    </div>`;
+    <div class="dr-section"><div class="dr-section-title">積分明細</div>${tlHtml}</div>`;
 
   document.getElementById('drawer-overlay').classList.add('show');
   document.getElementById('member-drawer').classList.add('show');
 }
 
-function closeDrawer(){
+function closeDrawer() {
+  currentDrawerEmail = null;
   document.getElementById('drawer-overlay').classList.remove('show');
   document.getElementById('member-drawer').classList.remove('show');
 }
 
-function adjustPoints(email){
-  const type  = document.getElementById('dr-pts-type').value;
-  const amt   = parseInt(document.getElementById('dr-pts-amt').value)||0;
-  const note  = document.getElementById('dr-pts-note').value||'管理者操作';
-  if(!amt){toast('請輸入點數');return;}
+async function adjustPoints(email) {
+  const type = document.getElementById('dr-pts-type').value;
+  const amt  = parseInt(document.getElementById('dr-pts-amt').value) || 0;
+  const note = document.getElementById('dr-pts-note').value || '管理者操作';
+  if (!amt) { toast('請輸入點數'); return; }
   const u = USERS[email];
-  if(type==='minus' && amt > u.points){toast('扣除點數不能超過現有積分');return;}
-  const newBal = type==='plus' ? u.points+amt : u.points-amt;
-  u.points = newBal;
-  u.history.unshift({date:today(),desc:note,note:'管理者手動',type,amt,bal:newBal});
+  if (type === 'minus' && amt > (u.points || 0)) { toast('扣除點數不能超過現有積分'); return; }
+  const newBal    = type === 'plus' ? (u.points||0) + amt : (u.points||0) - amt;
+  const newHistory = [{ date:today(), desc:note, note:'管理者手動', type, amt, bal:newBal }, ...(u.history||[])];
+  await db.collection('users').doc(email).update({ points: newBal, history: newHistory });
   toast(`✅ 已${type==='plus'?'新增':'扣除'} ${amt} 點，餘額 ${newBal}`);
-  renderOverview();
-  renderMembers();
-  openDrawer(email); // refresh
 }
 
-function setRole(email, role){
-  confirm2(`確定要將 ${USERS[email].name} 的身份改為「${roleLabel(role)}」嗎？`, ()=>{
-    USERS[email].role = role;
+async function setRole(email, role) {
+  confirm2(`確定要將 ${USERS[email].name} 的身份改為「${roleLabel(role)}」嗎？`, async () => {
+    await db.collection('users').doc(email).update({ role });
     toast(`✅ 身份已更新為：${roleLabel(role)}`);
-    renderOverview();
-    renderMembers();
-    renderReview();
-    openDrawer(email);
   });
 }
 
 // ══════════════════════════════════════════
 //  AFFILIATE REVIEW
 // ══════════════════════════════════════════
-function renderReview(){
-  const emails = Object.keys(USERS).filter(e=>USERS[e].role==='affiliate_pending');
-  const list = document.getElementById('review-list');
-  const empty = document.getElementById('review-empty');
-  const badge = document.getElementById('badge-review');
-  badge.textContent = emails.length;
-
-  if(!emails.length){
-    list.innerHTML='';empty.style.display='block';return;
-  }
-  empty.style.display='none';
-  list.innerHTML = emails.map(email=>{
-    const u = USERS[email];
-    const app = u.affApp||{};
-    return `<div class="review-card" id="rc-${email.replace('@','_').replace('.','_')}">
-      <div class="rc-top">
-        <div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>
-        ${roleBadge(u.role)}
-      </div>
+function renderReview() {
+  const emails = Object.keys(USERS).filter(e => USERS[e].role === 'affiliate_pending');
+  const list   = document.getElementById('review-list');
+  const empty  = document.getElementById('review-empty');
+  document.getElementById('badge-review').textContent = emails.length;
+  if (!emails.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = emails.map(email => {
+    const u = USERS[email], app = u.affApp || {};
+    return `<div class="review-card" id="rc-${email.replace(/[@.]/g,'_')}">
+      <div class="rc-top"><div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>${roleBadge(u.role)}</div>
       <div class="rc-fields">
         <div class="rc-field"><label>申請日期</label><span>${app.date||u.joined||'—'}</span></div>
         <div class="rc-field"><label>推廣管道</label><span>${app.channel||'—'}</span></div>
@@ -742,38 +740,38 @@ function renderReview(){
   }).join('');
 }
 
-function approveAffiliate(email){
-  confirm2(`確定通過 ${USERS[email].name} 的推廣者申請？`, ()=>{
-    USERS[email].role = 'affiliate_approved';
+async function approveAffiliate(email) {
+  confirm2(`確定通過 ${USERS[email].name} 的推廣者申請？`, async () => {
+    await db.collection('users').doc(email).update({ role: 'affiliate_approved' });
     toast(`✅ 已通過 ${USERS[email].name} 的申請`);
-    renderOverview();renderMembers();renderReview();
   });
 }
 
-function toggleRejectInput(email){
-  const key = email.replace(/[@.]/g,'_');
-  const inp = document.getElementById('reject-reason-'+key);
-  const btn = document.getElementById('reject-confirm-'+key);
+function toggleRejectInput(email) {
+  const key = email.replace(/[@.]/g, '_');
+  const inp = document.getElementById('reject-reason-' + key);
+  const btn = document.getElementById('reject-confirm-' + key);
   inp.classList.toggle('show');
-  btn.style.display = btn.style.display==='none' ? '' : 'none';
+  btn.style.display = btn.style.display === 'none' ? '' : 'none';
 }
 
-function rejectAffiliate(email){
-  const key = email.replace(/[@.]/g,'_');
-  const reason = document.getElementById('reject-reason-'+key).value||'不符合申請資格';
-  confirm2(`確定拒絕 ${USERS[email].name} 的申請？原因：${reason}`, ()=>{
-    delete USERS[email]; // remove demo; real impl would just set role
-    toast(`已拒絕申請並通知對方`);
-    renderOverview();renderMembers();renderReview();
+async function rejectAffiliate(email) {
+  const key    = email.replace(/[@.]/g, '_');
+  const reason = document.getElementById('reject-reason-' + key).value || '不符合申請資格';
+  confirm2(`確定拒絕 ${USERS[email].name} 的申請？原因：${reason}`, async () => {
+    await db.collection('users').doc(email).update({
+      role: 'member',
+      affApp: firebase.firestore.FieldValue.delete()
+    });
+    toast('已拒絕申請');
   });
 }
 
 // ══════════════════════════════════════════
 //  MATERIALS
 // ══════════════════════════════════════════
-function renderMaterials(){
-  const grid = document.getElementById('mat-mgr-grid');
-  grid.innerHTML = MATERIALS.map(m=>`
+function renderMaterials() {
+  document.getElementById('mat-mgr-grid').innerHTML = MATERIALS.map(m => `
     <div class="mat-mgr-card">
       <div class="mmc-hd">
         <div><div class="mmc-name">${m.name}</div><div class="mmc-type">${m.type}</div></div>
@@ -782,140 +780,101 @@ function renderMaterials(){
       <div class="mmc-url">${m.url||'（尚未設定連結）'}</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${m.desc}</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sm btn-outline-gold" onclick="toggleEdit(${m.id})">編輯連結</button>
-        <button class="btn-sm btn-outline-red" onclick="deleteMat(${m.id})">刪除</button>
+        <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">編輯連結</button>
+        <button class="btn-sm btn-outline-red"  onclick="deleteMat('${m.id}')">刪除</button>
       </div>
       <div class="mmc-edit-form" id="edit-${m.id}">
-        <div class="f-group" style="margin-top:12px"><label class="f-label">更新連結</label><input class="f-input" id="edit-url-${m.id}" type="url" value="${m.url}" placeholder="https://..."></div>
+        <div class="f-group" style="margin-top:12px"><label class="f-label">更新連結</label>
+          <input class="f-input" id="edit-url-${m.id}" type="url" value="${m.url}" placeholder="https://...">
+        </div>
         <div style="display:flex;gap:8px">
-          <button class="btn-sm btn-solid-gold" onclick="saveMatUrl(${m.id})">儲存</button>
-          <button class="btn-sm btn-outline-gold" onclick="toggleEdit(${m.id})">取消</button>
+          <button class="btn-sm btn-solid-gold"  onclick="saveMatUrl('${m.id}')">儲存</button>
+          <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">取消</button>
         </div>
       </div>
     </div>`).join('');
 }
 
-function toggleEdit(id){
-  document.getElementById('edit-'+id).classList.toggle('show');
-}
-function saveMatUrl(id){
-  const m = MATERIALS.find(x=>x.id===id);
-  const val = document.getElementById('edit-url-'+id).value.trim();
-  m.url = val;
-  m.status = val ? 'active' : 'coming';
+function toggleEdit(id) { document.getElementById('edit-' + id).classList.toggle('show'); }
+
+async function saveMatUrl(id) {
+  const val = document.getElementById('edit-url-' + id).value.trim();
+  await db.collection('materials').doc(id).update({ url: val, status: val ? 'active' : 'coming' });
   toast('✅ 連結已更新');
-  renderMaterials();
 }
-function deleteMat(id){
-  confirm2('確定要刪除此素材項目嗎？', ()=>{
-    const i = MATERIALS.findIndex(x=>x.id===id);
-    if(i>-1) MATERIALS.splice(i,1);
+
+async function deleteMat(id) {
+  confirm2('確定要刪除此素材項目嗎？', async () => {
+    await db.collection('materials').doc(id).delete();
     toast('已刪除素材');
-    renderMaterials();
   });
 }
-function addMaterial(){
+
+async function addMaterial() {
   const name = document.getElementById('new-mat-name').value.trim();
   const type = document.getElementById('new-mat-type').value;
   const url  = document.getElementById('new-mat-url').value.trim();
   const desc = document.getElementById('new-mat-desc').value.trim();
-  if(!name){toast('請輸入素材名稱');return;}
-  const id = Date.now();
-  MATERIALS.push({id,name,type,url,desc,status:url?'active':'coming'});
-  document.getElementById('new-mat-name').value='';
-  document.getElementById('new-mat-url').value='';
-  document.getElementById('new-mat-desc').value='';
+  if (!name) { toast('請輸入素材名稱'); return; }
+  await db.collection('materials').add({ name, type, url, desc, status: url ? 'active' : 'coming', order: Date.now() });
+  document.getElementById('new-mat-name').value = '';
+  document.getElementById('new-mat-url').value  = '';
+  document.getElementById('new-mat-desc').value = '';
   toast('✅ 已新增素材');
-  renderMaterials();
 }
 
 // ══════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════
-function roleBadge(role){
-  const map={
-    member:`<span class="badge badge-member"><span class="badge-dot"></span>一般會員</span>`,
-    affiliate_pending:`<span class="badge badge-pending"><span class="badge-dot"></span>推廣者審核中</span>`,
-    affiliate_approved:`<span class="badge badge-approved"><span class="badge-dot"></span>推廣者已通過</span>`,
-    suspended:`<span class="badge badge-suspended"><span class="badge-dot"></span>已停權</span>`,
+function roleBadge(role) {
+  const map = {
+    member:             `<span class="badge badge-member"><span class="badge-dot"></span>一般會員</span>`,
+    affiliate_pending:  `<span class="badge badge-pending"><span class="badge-dot"></span>推廣者審核中</span>`,
+    affiliate_approved: `<span class="badge badge-approved"><span class="badge-dot"></span>推廣者已通過</span>`,
+    suspended:          `<span class="badge badge-suspended"><span class="badge-dot"></span>已停權</span>`,
   };
-  return map[role]||`<span class="badge badge-member">${role}</span>`;
+  return map[role] || `<span class="badge badge-member">${role}</span>`;
 }
-function roleLabel(r){
-  return {member:'一般會員',affiliate_pending:'推廣者（審核中）',affiliate_approved:'推廣者（已通過）',suspended:'停權'}[r]||r;
+function roleLabel(r) {
+  return { member:'一般會員', affiliate_pending:'推廣者（審核中）', affiliate_approved:'推廣者（已通過）', suspended:'停權' }[r] || r;
 }
 
 let _confirmCb = null;
-function confirm2(msg, cb){
+function confirm2(msg, cb) {
   document.getElementById('confirm-msg').textContent = msg;
-  document.getElementById('confirm-ok').onclick = ()=>{cb();closeConfirm()};
+  document.getElementById('confirm-ok').onclick = () => { cb(); closeConfirm(); };
   document.getElementById('confirm-modal').classList.add('show');
-  _confirmCb = cb;
 }
-function closeConfirm(){document.getElementById('confirm-modal').classList.remove('show')}
-document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeConfirm()});
+function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
+document.getElementById('confirm-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirm-modal')) closeConfirm();
+});
 
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
-function today(){return new Date().toISOString().slice(0,10)}
+function today() { return new Date().toISOString().slice(0, 10); }
 
-// ══════════════════════════════════════════
-//  MOBILE PAGE NAVIGATION (Tab Bar)
-// ══════════════════════════════════════════
-function goPageMob(id, el){
-  // reuse desktop goPage but without event dependency
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
-  document.getElementById('page-'+id).classList.add('show');
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  // update tab bar
-  document.querySelectorAll('.atb-item').forEach(b=>b.classList.remove('active'));
-  if(el) el.classList.add('active');
-}
-
-// override goPage to also sync tab bar
-const _origGoPage = goPage;
-function goPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
-  document.getElementById('page-'+id).classList.add('show');
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  if(event && event.currentTarget) event.currentTarget.classList.add('active');
-  // sync tab bar
-  const pageTabMap = {overview:0,members:1,review:2,materials:3};
-  const idx = pageTabMap[id];
-  const tabs = document.querySelectorAll('.atb-item');
-  tabs.forEach(b=>b.classList.remove('active'));
-  if(idx!==undefined && tabs[idx]) tabs[idx].classList.add('active');
-  // sync review badge
-  syncReviewBadge();
-}
-
-function syncReviewBadge(){
-  const cnt = Object.values(USERS).filter(u=>u.role==='affiliate_pending').length;
-  const b1 = document.getElementById('badge-review');
-  const b2 = document.getElementById('mob-badge-review');
-  if(b1) b1.textContent = cnt;
-  if(b2) b2.textContent = cnt;
-  if(b2) b2.style.display = cnt ? '' : 'none';
+function syncReviewBadge() {
+  const cnt = Object.values(USERS).filter(u => u.role === 'affiliate_pending').length;
+  const b1  = document.getElementById('badge-review');
+  const b2  = document.getElementById('mob-badge-review');
+  if (b1) b1.textContent = cnt;
+  if (b2) { b2.textContent = cnt; b2.style.display = cnt ? '' : 'none'; }
 }
 
 // ══════════════════════════════════════════
 //  PWA
 // ══════════════════════════════════════════
-window.addEventListener('load', ()=>{
-  if('serviceWorker' in navigator){
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
-      .then(()=>console.log('[JNC Admin] SW registered'))
-      .catch(err=>console.warn('[JNC Admin] SW error', err));
+      .then(() => console.log('[JNC Admin] SW registered'))
+      .catch(err => console.warn('[JNC Admin] SW error', err));
   }
 });
-
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-syncReviewBadge();
 </script>
 </body>
 </html>
