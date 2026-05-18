@@ -1388,9 +1388,14 @@ async function forgotPassword(){
   if(!e){ toast('請先輸入您的 Email'); return; }
   try {
     await auth.sendPasswordResetEmail(e);
-    toast('✅ 重設密碼信已寄出，請查看信箱');
+    toast('✅ 重設密碼信已寄出，請檢查信箱（含垃圾郵件夾）');
   } catch(err) {
-    toast('找不到此 Email，請確認後重試');
+    const code = err.code||'';
+    if(code==='auth/user-not-found'||code==='auth/invalid-email'){
+      toast('找不到此 Email，請確認後重試');
+    } else {
+      toast('發送失敗：' + (err.message||code));
+    }
   }
 }
 
