@@ -498,11 +498,12 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
 
 <!-- MOBILE NAV DRAWER -->
 <div class="mobile-nav" id="mobile-nav">
-  <a href="#services" onclick="closeMobileNav()"><span class="t" data-key="nav_services"></span></a>
-  <a href="#features" onclick="closeMobileNav()"><span class="t" data-key="nav_features"></span></a>
-  <a href="#pricing" onclick="closeMobileNav()"><span class="t" data-key="nav_pricing"></span></a>
-  <a href="#cases" onclick="closeMobileNav()"><span class="t" data-key="nav_cases"></span></a>
-  <a href="#affiliate-sec" onclick="closeMobileNav()"><span class="t" data-key="nav_affiliate"></span></a>
+  <a href="javascript:void(0)" onclick="navTo('services');closeMobileNav()"><span class="t" data-key="nav_services"></span></a>
+  <a href="javascript:void(0)" onclick="navTo('features');closeMobileNav()"><span class="t" data-key="nav_features"></span></a>
+  <a href="javascript:void(0)" onclick="navTo('pricing');closeMobileNav()"><span class="t" data-key="nav_pricing"></span></a>
+  <a href="javascript:void(0)" onclick="navTo('cases');closeMobileNav()"><span class="t" data-key="nav_cases"></span></a>
+  <a href="javascript:void(0)" onclick="navTo('affiliate-sec');closeMobileNav()"><span class="t" data-key="nav_affiliate"></span></a>
+  <a href="javascript:void(0)" onclick="(currentUser?openDash():openModal('login'));closeMobileNav()" style="color:var(--gold)"><span class="t" data-key="btn_my"></span></a>
   <div class="mobile-nav-lang">
     <button onclick="setLang('zh','中文');closeMobileNav()" id="mlang-zh" class="active">中文</button>
     <button onclick="setLang('en','EN');closeMobileNav()" id="mlang-en">EN</button>
@@ -544,11 +545,12 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
     <span class="nav-logo-full">Japan Night Concierge</span>
   </div>
   <ul class="nav-links" id="main-nav-links">
-    <li><a href="#services"><span class="t" data-key="nav_services"></span></a></li>
-    <li><a href="#features"><span class="t" data-key="nav_features"></span></a></li>
-    <li><a href="#pricing"><span class="t" data-key="nav_pricing"></span></a></li>
-    <li><a href="#cases"><span class="t" data-key="nav_cases"></span></a></li>
-    <li><a href="#affiliate-sec"><span class="t" data-key="nav_affiliate"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('services')"><span class="t" data-key="nav_services"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('features')"><span class="t" data-key="nav_features"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('pricing')"><span class="t" data-key="nav_pricing"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('cases')"><span class="t" data-key="nav_cases"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('affiliate-sec')"><span class="t" data-key="nav_affiliate"></span></a></li>
+    <li><a href="javascript:void(0)" onclick="currentUser?openDash():openModal('login')" style="color:var(--gold)"><span class="t" data-key="btn_my"></span></a></li>
   </ul>
   <div class="nav-right">
     <div class="lang-wrap" id="lang-wrap">
@@ -1428,6 +1430,14 @@ function goToSite(){
   const tb = document.getElementById('dash-tab-bar');
   if(tb) tb.classList.remove('show');
   window.scrollTo(0, 0);
+}
+
+function navTo(id){
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('site').style.display = 'block';
+  const tb = document.getElementById('dash-tab-bar');
+  if(tb) tb.classList.remove('show');
+  setTimeout(()=>{ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 50);
 }
 
 // ══════════════════════════════════════════
