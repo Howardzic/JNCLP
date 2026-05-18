@@ -565,6 +565,7 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
     </div>
     <button class="btn-ghost" onclick="openModal('login')" id="btn-login"><span class="t" data-key="btn_login"></span></button>
     <button class="btn-solid" onclick="openModal('register')" id="btn-book"><span class="t" data-key="btn_book"></span></button>
+    <span id="nav-username" style="display:none;font-size:11px;letter-spacing:.12em;color:var(--gold-lt)"></span>
     <button class="btn-solid" style="display:none" onclick="openDash()" id="btn-dash"><span class="t" data-key="btn_my"></span></button>
     <button class="btn-ghost" style="display:none" onclick="logout()" id="btn-logout"><span class="t" data-key="btn_logout"></span></button>
   </div>
@@ -837,6 +838,7 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
       <div class="dash-nav-item active" onclick="switchPanel('pts')"><span class="dash-nav-ico">✦</span><span class="t" data-key="dash_pts"></span></div>
       <div class="dash-nav-item" onclick="switchPanel('redeem')"><span class="dash-nav-ico">🎁</span><span class="t" data-key="dash_redeem"></span></div>
       <div class="dash-nav-item" id="nav-mats" style="display:none" onclick="switchPanel('mats')"><span class="dash-nav-ico">📦</span><span class="t" data-key="dash_mats"></span></div>
+      <div class="dash-nav-item" onclick="switchPanel('pw')"><span class="dash-nav-ico">🔑</span>更改密碼</div>
       <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid rgba(184,150,90,.1)">
         <div class="dash-nav-item" onclick="goToSite()" style="opacity:.7"><span class="dash-nav-ico">←</span>回到主頁</div>
         <div class="dash-nav-item" onclick="logout()"><span class="dash-nav-ico">↩</span><span class="t" data-key="btn_logout"></span></div>
@@ -875,6 +877,17 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
         </div>
       </div>
 
+      <!-- CHANGE PASSWORD -->
+      <div class="dash-panel" id="panel-pw">
+        <div class="dash-title">更改<em>密碼</em></div>
+        <div style="max-width:380px;margin-top:8px">
+          <div class="f-group"><label class="f-label">目前密碼</label><input class="f-input" id="pw-current" type="password" placeholder="••••••••"></div>
+          <div class="f-group"><label class="f-label">新密碼（至少 6 位）</label><input class="f-input" id="pw-new" type="password" placeholder="••••••••"></div>
+          <div class="f-group"><label class="f-label">確認新密碼</label><input class="f-input" id="pw-confirm" type="password" placeholder="••••••••"></div>
+          <button class="f-btn" onclick="changePassword()">確認更改密碼</button>
+        </div>
+      </div>
+
       <!-- MATERIALS -->
       <div class="dash-panel" id="panel-mats">
         <div class="dash-title"><span class="t" data-key="dash_mats_title"></span></div>
@@ -898,6 +911,9 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
     <div class="modal-body">
       <div class="f-group"><label class="f-label">Email</label><input class="f-input" id="l-email" type="email" placeholder="email@example.com"></div>
       <div class="f-group"><label class="f-label"><span class="t" data-key="f_pw"></span></label><input class="f-input" id="l-pw" type="password" placeholder="••••••••"></div>
+      <div style="text-align:right;margin-bottom:12px;margin-top:-8px">
+        <a href="#" onclick="forgotPassword()" style="font-size:11px;color:var(--muted);letter-spacing:.05em;transition:color .3s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">忘記密碼？</a>
+      </div>
       <button class="f-btn" onclick="doLogin()"><span class="t" data-key="modal_login_btn"></span></button>
       <div class="f-link"><span class="t" data-key="login_switch_pre"></span> <a href="#" onclick="switchModal('login','register')"><span class="t" data-key="login_switch_lnk"></span></a></div>
     </div>
@@ -1231,6 +1247,8 @@ auth.onAuthStateChanged(fbUser => {
       if (currentUser.role === 'admin') { window.location.href = 'jnc-admin.html'; return; }
       ['btn-login','btn-book'].forEach(id => document.getElementById(id).style.display = 'none');
       ['btn-dash','btn-logout'].forEach(id => document.getElementById(id).style.display = '');
+      const nu = document.getElementById('nav-username');
+      if (nu) { nu.textContent = currentUser.name; nu.style.display = ''; }
       const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
       if (md) md.style.display = ''; if (ml) ml.style.display = '';
       closeModal('login'); closeModal('register');
@@ -1244,6 +1262,8 @@ auth.onAuthStateChanged(fbUser => {
     document.getElementById('site').style.display = 'block';
     ['btn-login','btn-book'].forEach(id => document.getElementById(id).style.display = '');
     ['btn-dash','btn-logout'].forEach(id => document.getElementById(id).style.display = 'none');
+    const nu2 = document.getElementById('nav-username');
+    if (nu2) nu2.style.display = 'none';
     const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
     if (md) md.style.display = 'none'; if (ml) ml.style.display = 'none';
     const tb = document.getElementById('dash-tab-bar');
@@ -1362,6 +1382,40 @@ function doLogin(){
   auth.signInWithEmailAndPassword(e, p).catch(() => { justAuthenticated = false; toast('帳號或密碼錯誤'); });
 }
 function logout(){ auth.signOut(); }
+
+async function forgotPassword(){
+  const e = document.getElementById('l-email').value.trim();
+  if(!e){ toast('請先輸入您的 Email'); return; }
+  try {
+    await auth.sendPasswordResetEmail(e);
+    toast('✅ 重設密碼信已寄出，請查看信箱');
+  } catch(err) {
+    toast('找不到此 Email，請確認後重試');
+  }
+}
+
+async function changePassword(){
+  const current = document.getElementById('pw-current').value;
+  const newPw   = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  if(!current || !newPw){ toast('請填寫所有欄位'); return; }
+  if(newPw.length < 6){ toast('新密碼至少需要 6 位'); return; }
+  if(newPw !== confirm){ toast('兩次輸入的新密碼不一致'); return; }
+  const user = auth.currentUser;
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+  try {
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPw);
+    ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+    toast('✅ 密碼已成功更改');
+  } catch(err) {
+    if(err.code==='auth/wrong-password'||err.code==='auth/invalid-credential'){
+      toast('目前密碼錯誤，請重試');
+    } else {
+      toast('更改失敗，請稍後重試');
+    }
+  }
+}
 
 function goToSite(){
   document.getElementById('dashboard').style.display = 'none';
