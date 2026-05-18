@@ -3019,6 +3019,12 @@
           </div>
           <div class="f-group"><label class="f-label">Email</label><input class="f-input" id="aff-email" type="email">
           </div>
+          <div id="aff-pw-section">
+            <div class="f-row f-group">
+              <div><label class="f-label">密碼</label><input class="f-input" id="aff-pw" type="password" placeholder="至少 6 位"></div>
+              <div><label class="f-label">確認密碼</label><input class="f-input" id="aff-pw2" type="password" placeholder="再次輸入密碼"></div>
+            </div>
+          </div>
           <div class="f-group">
             <label class="f-label"><span class="t" data-key="f_channel"></span></label>
             <select class="f-select" id="aff-channel">
@@ -3577,6 +3583,11 @@
           const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
           if (md) md.style.display = ''; if (ml) ml.style.display = '';
           closeModal('login'); closeModal('register');
+          // Hide password fields in affiliate form when already logged in
+          const affPwSec = document.getElementById('aff-pw-section');
+          if (affPwSec) affPwSec.style.display = 'none';
+          const affEmailEl = document.getElementById('aff-email');
+          if (affEmailEl && !affEmailEl.value) affEmailEl.value = email;
           // Only jump to dashboard if user explicitly just logged in/registered
           if (justAuthenticated) { justAuthenticated = false; openDash(); }
         });
@@ -3585,6 +3596,8 @@
         if (unsubUser) { unsubUser(); unsubUser = null; }
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('site').style.display = 'block';
+        const affPwSec2 = document.getElementById('aff-pw-section');
+        if (affPwSec2) affPwSec2.style.display = '';
         ['btn-login', 'btn-book'].forEach(id => document.getElementById(id).style.display = '');
         ['btn-dash', 'btn-logout'].forEach(id => document.getElementById(id).style.display = 'none');
         const nu2 = document.getElementById('nav-username');
@@ -3849,18 +3862,43 @@
     //  AFFILIATE SUBMIT
     // ══════════════════════════════════════════
     async function submitAff() {
-      const name = document.getElementById('aff-name').value.trim();
-      const email = document.getElementById('aff-email').value.trim();
+      const name    = document.getElementById('aff-name').value.trim();
+      const phone   = document.getElementById('aff-phone').value.trim();
+      const email   = document.getElementById('aff-email').value.trim();
       const channel = document.getElementById('aff-channel')?.value || '';
-      const volume = document.getElementById('aff-volume')?.value || '';
+      const volume  = document.getElementById('aff-volume')?.value || '';
       if (!name || !email) { toast('請填寫姓名與 Email'); return; }
+
       if (currentUser) {
+        // Already logged in — update existing Firestore doc
         await db.collection('users').doc(currentUser._email).update({
           role: 'affiliate_pending',
           affApp: { channel, volume, date: today() }
         });
+        toast('✅ 申請已提交！我們將在 48 小時內與您聯繫。');
+      } else {
+        // Not logged in — validate password and create account
+        const pw  = document.getElementById('aff-pw').value;
+        const pw2 = document.getElementById('aff-pw2').value;
+        if (!pw) { toast('請設定您的登入密碼'); return; }
+        if (pw.length < 6) { toast('密碼長度至少需要 6 位'); return; }
+        if (pw !== pw2) { toast('兩次輸入的密碼不一致'); return; }
+        justAuthenticated = true;
+        try {
+          await auth.createUserWithEmailAndPassword(email, pw);
+          await db.collection('users').doc(email).set({
+            name, phone, role: 'affiliate_pending', points: 0, joined: today(),
+            history: [],
+            affApp: { channel, volume, date: today() }
+          });
+          toast('✅ 申請已提交！我們將在 48 小時內與您聯繫。');
+        } catch (err) {
+          justAuthenticated = false;
+          if (err.code === 'auth/email-already-in-use') toast('此 Email 已被使用，請直接登入後申請');
+          else if (err.code === 'auth/weak-password') toast('密碼長度至少需要 6 位');
+          else toast('申請失敗，請稍後重試');
+        }
       }
-      toast('✅ 申請已提交！我們將在 48 小時內與您聯繫。');
     }
 
     // ══════════════════════════════════════════
