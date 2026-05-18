@@ -1,5 +1,5 @@
-// JNC Service Worker v1.0
-const CACHE_NAME = 'jnc-v1';
+// JNC Service Worker v1.2
+const CACHE_NAME = 'jnc-v2';
 const OFFLINE_URL = 'offline.html';
 
 const PRECACHE = [

@@ -2573,9 +2573,9 @@
       <button onclick="setLang('ko','한국어');closeMobileNav()" id="mlang-ko">한국어</button>
     </div>
     <div class="mobile-nav-actions">
-      <button class="btn-ghost" style="width:100%;padding:13px;font-size:13px;letter-spacing:.15em"
+      <button class="btn-ghost" id="mob-btn-login" style="width:100%;padding:13px;font-size:13px;letter-spacing:.15em"
         onclick="openModal('login');closeMobileNav()"><span class="t" data-key="btn_login"></span></button>
-      <button class="btn-solid" style="width:100%;padding:13px;font-size:13px;letter-spacing:.15em"
+      <button class="btn-solid" id="mob-btn-book" style="width:100%;padding:13px;font-size:13px;letter-spacing:.15em"
         onclick="openModal('register');closeMobileNav()"><span class="t" data-key="btn_book"></span></button>
       <button class="btn-solid" id="mob-btn-dash"
         style="display:none;width:100%;padding:13px;font-size:13px;letter-spacing:.15em"
@@ -2674,7 +2674,7 @@
         <p class="hero-jp">ジャパン・ナイト・コンシェルジュ</p>
         <p class="hero-desc"><span class="t" data-key="hero_desc"></span></p>
         <div class="hero-ctas">
-          <button class="cta-main" onclick="openModal('register')"><span class="t" data-key="hero_cta1"></span></button>
+          <button class="cta-main" onclick="openContact()"><span class="t" data-key="hero_cta1"></span></button>
           <button class="cta-sub"
             onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})"><span class="t"
               data-key="hero_cta2"></span></button>
@@ -2883,7 +2883,7 @@
             <span class="pt-amt">NT$1,000</span>
           </div>
           <div class="pricing-cta">
-            <button onclick="openModal('register')"><span class="t" data-key="price_cta"></span></button>
+            <button onclick="openContact()"><span class="t" data-key="price_cta"></span></button>
           </div>
         </div>
       </div>
@@ -3206,6 +3206,32 @@
 
   <!-- ════════════ MODALS ════════════ -->
 
+  <!-- CONTACT (logged-in users) -->
+  <div class="overlay" id="modal-contact">
+    <div class="modal">
+      <div class="modal-hd">
+        <div>
+          <div class="modal-hd-title">預約諮詢</div>
+          <div class="modal-hd-sub">JNC CONCIERGE · LINE</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('contact')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:20px">您已是 JNC 會員。請掃描下方 QR Code 或搜尋 LINE ID，由專屬顧問為您安排行程，說明您的需求與偏好即可開始預約。</p>
+        <div class="qr-wrap">
+          <div class="qr-box">
+            <div class="qr-corner tl"></div>
+            <div class="qr-corner tr"></div>
+            <div class="qr-corner bl"></div>
+            <div class="qr-inner" id="contact-qr-grid"></div>
+          </div>
+          <div class="qr-id" style="margin-top:12px">LINE ID: @jnc_official</div>
+          <p class="qr-note" style="margin-top:8px">掃描加入後，請告知您的會員姓名，顧問將為您提供專屬服務。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- LOGIN -->
   <div class="overlay" id="modal-login">
     <div class="modal">
@@ -3271,6 +3297,13 @@
               <option value="ja">日本語</option>
               <option value="ko">한국어</option>
             </select>
+          </div>
+          <div class="f-group">
+            <label class="f-label">LINE ID <span style="color:var(--gold);font-size:9px;letter-spacing:.1em">（強烈建議填寫）</span></label>
+            <input class="f-input" id="r-line-id" type="text" placeholder="如：your_line_id">
+            <div style="margin-top:8px;padding:10px 13px;background:rgba(184,150,90,.07);border-left:2px solid var(--gold-dk);font-size:11px;color:var(--gold-lt);line-height:1.8">
+              ⚠ 若未提供 LINE 帳號，可能導致顧問無法及時聯繫您。請確實加入官方 LINE <strong>@jnc_official</strong> 並填入您的 LINE ID，以確保服務順利進行。
+            </div>
           </div>
           <div class="f-group" style="margin-top:4px">
             <label class="f-label" style="color:var(--muted)">推廣者邀請碼（選填）</label>
@@ -3605,7 +3638,7 @@
           if (!snap.exists) return;
           currentUser = { ...snap.data(), _email: email };
           if (currentUser.role === 'admin') { window.location.href = 'jnc-admin.html'; return; }
-          ['btn-login', 'btn-book'].forEach(id => document.getElementById(id).style.display = 'none');
+          ['btn-login', 'btn-book', 'mob-btn-login', 'mob-btn-book'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           ['btn-dash', 'btn-logout'].forEach(id => document.getElementById(id).style.display = '');
           const nu = document.getElementById('nav-username');
           if (nu) { nu.textContent = currentUser.name; nu.style.display = ''; }
@@ -3627,7 +3660,7 @@
         document.getElementById('site').style.display = 'block';
         const affPwSec2 = document.getElementById('aff-pw-section');
         if (affPwSec2) affPwSec2.style.display = '';
-        ['btn-login', 'btn-book'].forEach(id => document.getElementById(id).style.display = '');
+        ['btn-login', 'btn-book', 'mob-btn-login', 'mob-btn-book'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
         ['btn-dash', 'btn-logout'].forEach(id => document.getElementById(id).style.display = 'none');
         const nu2 = document.getElementById('nav-username');
         if (nu2) nu2.style.display = 'none';
@@ -3695,6 +3728,22 @@
       document.getElementById('modal-' + id).classList.remove('show');
     }
     function switchModal(a, b) { closeModal(a); setTimeout(() => openModal(b), 200) }
+
+    // CTA button: show LINE contact if logged in, else show register
+    function openContact() {
+      if (currentUser) {
+        buildContactQR();
+        openModal('contact');
+      } else {
+        openModal('register');
+      }
+    }
+    function buildContactQR() {
+      const g = document.getElementById('contact-qr-grid');
+      if (!g) return;
+      const pat = [1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0];
+      g.innerHTML = pat.map(v => `<div class="qr-cell" style="background:${v ? 'var(--ink)' : 'var(--white)'}"></div>`).join('');
+    }
     document.querySelectorAll('.overlay').forEach(o => {
       o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show') });
     });
@@ -3738,6 +3787,7 @@
       const email   = document.getElementById('r-email').value.trim();
       const pw      = document.getElementById('r-pw').value;
       const phone   = document.getElementById('r-phone').value.trim();
+      const lineId  = (document.getElementById('r-line-id')?.value || '').trim();
       const refCode = (document.getElementById('r-ref-code')?.value || '').trim().toUpperCase();
       if (!email || !pw) { toast('請填寫 Email 與密碼'); return; }
 
@@ -3753,7 +3803,7 @@
       try {
         await auth.createUserWithEmailAndPassword(email, pw);
         const docData = {
-          name, phone, role: 'member', points: 200, joined: today(),
+          name, phone, lineId, role: 'member', points: 200, joined: today(),
           history: [{ date: today(), desc: '歡迎積分', note: '系統自動', type: 'plus', amt: 200, bal: 200 }]
         };
         if (affEmail) { docData.referredBy = affEmail; docData.referredByCode = refCode; }

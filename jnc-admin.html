@@ -671,7 +671,7 @@ function openDrawer(email) {
       <div class="dr-row">
         <div class="dr-field"><label>姓名</label><span>${u.name}</span></div>
         <div class="dr-field"><label>Email</label><span style="font-size:11px">${email}</span></div>
-        <div class="dr-field"><label>LINE</label><span>${u.line||'—'}</span></div>
+        <div class="dr-field"><label>LINE ID</label><span>${u.lineId||u.line||'—'}</span></div>
         <div class="dr-field"><label>加入日期</label><span>${u.joined||'—'}</span></div>
       </div>
       <div class="dr-field"><label>目前身份</label><div style="margin-top:6px">${roleBadge(u.role)}</div></div>
