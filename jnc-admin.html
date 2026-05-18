@@ -173,6 +173,16 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 .rc-reject-input{flex:1;padding:8px 12px;background:var(--ink3);border:1px solid rgba(255,255,255,.07);color:var(--text);font-size:12px;outline:none;display:none}
 .rc-reject-input.show{display:block}
 
+/* ─── REDEEM MANAGER ─── */
+.redm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);margin-bottom:1px}
+.redm-card{background:var(--ink2);padding:24px 28px}
+.redm-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.redm-name{font-size:15px;color:var(--white)}
+.redm-desc{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.redm-pts{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);line-height:1}
+.redm-pts-unit{font-size:11px;color:var(--muted);letter-spacing:.1em;margin-left:4px}
+.add-redm-form{background:var(--ink2);border:1px dashed rgba(184,150,90,.2);padding:24px;margin-top:1px}
+
 /* ─── MATERIALS MANAGER ─── */
 .mat-mgr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);margin-top:20px}
 .mat-mgr-card{background:var(--ink2);padding:24px}
@@ -337,6 +347,7 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
     <div class="sb-item" onclick="goPage('members')"><span class="sb-ico">👤</span>所有會員</div>
     <div class="sb-item" onclick="goPage('review')"><span class="sb-ico">🔍</span>推廣者審核 <span class="sb-badge" id="badge-review">2</span></div>
     <div class="sb-section">內容管理</div>
+    <div class="sb-item" onclick="goPage('redeem')"><span class="sb-ico">🎁</span>兌換管理</div>
     <div class="sb-item" onclick="goPage('materials')"><span class="sb-ico">📦</span>素材管理</div>
     <div class="sb-item" onclick="goPage('perf')"><span class="sb-ico">📊</span>推廣績效</div>
   </nav>
@@ -412,6 +423,22 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
     <div class="page-sub">審核推廣者申請，通過後對方可查看素材庫</div>
     <div id="review-list"></div>
     <div id="review-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px">目前沒有待審核的申請</div>
+  </div>
+
+  <!-- ── REDEEM ── -->
+  <div class="page" id="page-redeem">
+    <div class="page-title">積分<em>兌換管理</em></div>
+    <div class="page-sub">新增或刪除會員可兌換的項目，變更即時同步至會員端</div>
+    <div id="redm-grid-wrap"></div>
+    <div class="add-redm-form">
+      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px">＋ 新增兌換項目</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div><label class="f-label">項目名稱</label><input class="f-input" id="new-redm-name" type="text" placeholder="如：東京住宿折扣券"></div>
+        <div><label class="f-label">所需積分</label><input class="f-input" id="new-redm-pts" type="number" min="1" placeholder="500"></div>
+      </div>
+      <div style="margin-bottom:12px"><label class="f-label">說明文字</label><textarea class="f-textarea" id="new-redm-desc" placeholder="兌換說明、使用方式、有效期限等"></textarea></div>
+      <button class="btn-sm btn-solid-gold" onclick="addRedemption()">新增兌換項目</button>
+    </div>
   </div>
 
   <!-- ── MATERIALS ── -->
@@ -494,11 +521,13 @@ const db   = firebase.firestore();
 // ── local cache (populated by onSnapshot) ──
 let USERS    = {};
 let MATERIALS = [];
+let REDEMPTIONS = [];
 let filterTerm = '';
 let filterRole = '';
 let currentDrawerEmail = null;
 let unsubUsers = null;
 let unsubMaterials = null;
+let unsubRedemptions = null;
 
 // ══════════════════════════════════════════
 //  AUTH STATE
@@ -511,8 +540,9 @@ auth.onAuthStateChanged(user => {
   } else {
     document.getElementById('admin-shell').style.display  = 'none';
     document.getElementById('login-screen').style.display = 'flex';
-    if (unsubUsers)     { unsubUsers();     unsubUsers     = null; }
-    if (unsubMaterials) { unsubMaterials(); unsubMaterials = null; }
+    if (unsubUsers)       { unsubUsers();       unsubUsers       = null; }
+    if (unsubMaterials)   { unsubMaterials();   unsubMaterials   = null; }
+    if (unsubRedemptions) { unsubRedemptions(); unsubRedemptions = null; }
   }
 });
 
@@ -548,6 +578,11 @@ function initAdmin() {
   unsubMaterials = db.collection('materials').orderBy('order').onSnapshot(snap => {
     MATERIALS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderMaterials();
+  });
+
+  unsubRedemptions = db.collection('redemptions').orderBy('order').onSnapshot(snap => {
+    REDEMPTIONS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRedemptions();
   });
 }
 
@@ -871,6 +906,46 @@ async function assignAffCode(email) {
   do { affCode = genAffCode(); } while (existingCodes.has(affCode));
   await db.collection('users').doc(email).update({ affCode });
   toast(`✅ 已為 ${USERS[email]?.name} 生成推薦碼：${affCode}`);
+}
+
+// ══════════════════════════════════════════
+//  REDEMPTIONS
+// ══════════════════════════════════════════
+function renderRedemptions() {
+  const wrap = document.getElementById('redm-grid-wrap');
+  if (!wrap) return;
+  if (!REDEMPTIONS.length) {
+    wrap.innerHTML = '<div style="padding:32px;text-align:center;font-size:13px;color:var(--muted)">尚無兌換項目，請使用下方表單新增</div>';
+    return;
+  }
+  wrap.innerHTML = `<div class="redm-grid">${REDEMPTIONS.map(r => `
+    <div class="redm-card">
+      <div class="redm-hd">
+        <div class="redm-name">${r.name}</div>
+        <button class="btn-sm btn-outline-red" onclick="deleteRedemption('${r.id}')">刪除</button>
+      </div>
+      <div class="redm-desc">${r.desc || '—'}</div>
+      <div><span class="redm-pts">${(r.points||0).toLocaleString()}</span><span class="redm-pts-unit">POINTS</span></div>
+    </div>`).join('')}</div>`;
+}
+
+async function addRedemption() {
+  const name  = document.getElementById('new-redm-name').value.trim();
+  const pts   = parseInt(document.getElementById('new-redm-pts').value) || 0;
+  const desc  = document.getElementById('new-redm-desc').value.trim();
+  if (!name || pts < 1) { toast('請填寫名稱與積分數量'); return; }
+  await db.collection('redemptions').add({ name, points: pts, desc, order: Date.now() });
+  document.getElementById('new-redm-name').value = '';
+  document.getElementById('new-redm-pts').value  = '';
+  document.getElementById('new-redm-desc').value = '';
+  toast('✅ 兌換項目已新增');
+}
+
+async function deleteRedemption(id) {
+  confirm2('確定要刪除此兌換項目？刪除後會員端將立即移除。', async () => {
+    await db.collection('redemptions').doc(id).delete();
+    toast('已刪除兌換項目');
+  });
 }
 
 function renderMaterials() {

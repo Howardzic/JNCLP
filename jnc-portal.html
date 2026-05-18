@@ -1815,6 +1815,17 @@
       gap: 10px
     }
 
+    /* ── REDEEM ITEMS ── */
+    .rdm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--line-c); margin-top: 4px }
+    .rdm-card { background: var(--ink3); padding: 24px; display: flex; flex-direction: column }
+    .rdm-name { font-size: 15px; color: var(--white); margin-bottom: 6px; font-weight: 400 }
+    .rdm-desc { font-size: 12px; color: var(--muted); line-height: 1.75; flex: 1; margin-bottom: 18px }
+    .rdm-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px }
+    .rdm-pts { font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--gold); line-height: 1 }
+    .rdm-pts-unit { font-size: 10px; color: var(--muted); letter-spacing: .15em; margin-top: 4px }
+    .rdm-btn { flex-shrink: 0; font-size: 10px; letter-spacing: .15em; color: var(--gold); border: 1px solid var(--gold-dk); padding: 6px 14px; background: none; cursor: pointer; transition: all .3s }
+    .rdm-btn:hover { background: var(--gold-dk); color: var(--white) }
+
     /* ── AFFILIATE PERFORMANCE ── */
     .code-box { background: var(--ink4); border: 1px solid var(--line-c); border-left: 3px solid var(--gold); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 12px }
     .code-val { font-family: 'Cormorant Garamond', serif; font-size: 26px; letter-spacing: .2em; color: var(--gold-lt); word-break: break-all }
@@ -3166,11 +3177,7 @@
         <!-- REDEEM -->
         <div class="dash-panel" id="panel-redeem">
           <div class="dash-title"><span class="t" data-key="dash_redeem_title"></span></div>
-          <div class="redeem-empty">
-            <div class="redeem-empty-ico"><i data-lucide="gift"></i></div>
-            <div class="redeem-empty-title"><span class="t" data-key="redeem_soon_title"></span></div>
-            <div class="redeem-empty-desc"><span class="t" data-key="redeem_soon_desc"></span></div>
-          </div>
+          <div id="redeem-list"></div>
         </div>
 
         <!-- CHANGE PASSWORD -->
@@ -3625,6 +3632,7 @@
     let currentLang = 'zh';
     let currentUser = null;
     let unsubUser = null;
+    let unsubRedemptions = null;
     let justAuthenticated = false; // true only when user explicitly logs in/registers
 
     // ══════════════════════════════════════════
@@ -3634,6 +3642,13 @@
       if (fbUser) {
         const email = fbUser.email;
         if (unsubUser) unsubUser();
+        // Subscribe to redemption items (real-time)
+        if (!unsubRedemptions) {
+          unsubRedemptions = db.collection('redemptions').orderBy('order').onSnapshot(snap => {
+            const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderRedeemPanel(items);
+          });
+        }
         unsubUser = db.collection('users').doc(email).onSnapshot(snap => {
           if (!snap.exists) return;
           currentUser = { ...snap.data(), _email: email };
@@ -3662,7 +3677,8 @@
         });
       } else {
         currentUser = null;
-        if (unsubUser) { unsubUser(); unsubUser = null; }
+        if (unsubUser)        { unsubUser();        unsubUser        = null; }
+        if (unsubRedemptions) { unsubRedemptions(); unsubRedemptions = null; }
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('site').style.display = 'block';
         const affPwSec2 = document.getElementById('aff-pw-section');
@@ -3982,6 +3998,48 @@
       document.getElementById('panel-' + id).classList.add('show');
       document.querySelectorAll('.dash-nav-item').forEach(n => n.classList.remove('active'));
       event.currentTarget.classList.add('active');
+    }
+
+    // ══════════════════════════════════════════
+    //  REDEEM PANEL
+    // ══════════════════════════════════════════
+    function renderRedeemPanel(items) {
+      const el = document.getElementById('redeem-list');
+      if (!el) return;
+      if (!items || !items.length) {
+        el.innerHTML = `<div class="redeem-empty">
+          <div class="redeem-empty-ico"><i data-lucide="gift"></i></div>
+          <div class="redeem-empty-title">兌換項目即將推出</div>
+          <div class="redeem-empty-desc">目前尚無可兌換項目，敬請期待！</div>
+        </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+      el.innerHTML = `<div class="rdm-grid">${items.map(r => `
+        <div class="rdm-card">
+          <div class="rdm-name">${r.name}</div>
+          <div class="rdm-desc">${r.desc || ''}</div>
+          <div class="rdm-foot">
+            <div>
+              <div class="rdm-pts">${(r.points || 0).toLocaleString()}</div>
+              <div class="rdm-pts-unit">POINTS</div>
+            </div>
+            <button class="rdm-btn" onclick="redeemItem('${r.id}','${r.name.replace(/'/g,'')}',${r.points})">兌換</button>
+          </div>
+        </div>`).join('')}
+      </div>`;
+    }
+
+    function redeemItem(id, name, pts) {
+      const u = currentUser;
+      if (!u) return;
+      if ((u.points || 0) < pts) {
+        toast(`積分不足，此項目需 ${pts.toLocaleString()} 點（您目前有 ${(u.points||0).toLocaleString()} 點）`);
+        return;
+      }
+      buildContactQR();
+      openModal('contact');
+      toast(`請透過 LINE 告知顧問您要兌換「${name}」`);
     }
 
     // ══════════════════════════════════════════
