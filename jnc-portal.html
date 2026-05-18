@@ -837,7 +837,10 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
       <div class="dash-nav-item active" onclick="switchPanel('pts')"><span class="dash-nav-ico">✦</span><span class="t" data-key="dash_pts"></span></div>
       <div class="dash-nav-item" onclick="switchPanel('redeem')"><span class="dash-nav-ico">🎁</span><span class="t" data-key="dash_redeem"></span></div>
       <div class="dash-nav-item" id="nav-mats" style="display:none" onclick="switchPanel('mats')"><span class="dash-nav-ico">📦</span><span class="t" data-key="dash_mats"></span></div>
-      <div class="dash-nav-item" onclick="logout()" style="margin-top:auto;position:absolute;bottom:16px;width:100%"><span class="dash-nav-ico">↩</span><span class="t" data-key="btn_logout"></span></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid rgba(184,150,90,.1)">
+        <div class="dash-nav-item" onclick="goToSite()" style="opacity:.7"><span class="dash-nav-ico">←</span>回到主頁</div>
+        <div class="dash-nav-item" onclick="logout()"><span class="dash-nav-ico">↩</span><span class="t" data-key="btn_logout"></span></div>
+      </div>
     </aside>
     <main class="dash-content">
 
@@ -1213,6 +1216,7 @@ const db   = firebase.firestore();
 let currentLang = 'zh';
 let currentUser = null;
 let unsubUser   = null;
+let justAuthenticated = false; // true only when user explicitly logs in/registers
 
 // ══════════════════════════════════════════
 //  AUTH STATE
@@ -1230,7 +1234,8 @@ auth.onAuthStateChanged(fbUser => {
       const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
       if (md) md.style.display = ''; if (ml) ml.style.display = '';
       closeModal('login'); closeModal('register');
-      openDash();
+      // Only jump to dashboard if user explicitly just logged in/registered
+      if (justAuthenticated) { justAuthenticated = false; openDash(); }
     });
   } else {
     currentUser = null;
@@ -1331,6 +1336,7 @@ async function finishReg(){
   const pw    = document.getElementById('r-pw').value;
   const phone = document.getElementById('r-phone').value.trim();
   if(!email || !pw){toast('請填寫 Email 與密碼');return;}
+  justAuthenticated = true;
   try {
     await auth.createUserWithEmailAndPassword(email, pw);
     await db.collection('users').doc(email).set({
@@ -1339,6 +1345,7 @@ async function finishReg(){
     });
     toast('🌸 歡迎加入 JNC！已獲得 200 歡迎積分');
   } catch(err) {
+    justAuthenticated = false;
     if(err.code==='auth/email-already-in-use') toast('此 Email 已被使用，請直接登入');
     else if(err.code==='auth/weak-password') toast('密碼長度至少需要 6 位');
     else toast('註冊失敗，請稍後重試');
@@ -1351,9 +1358,18 @@ async function finishReg(){
 function doLogin(){
   const e = document.getElementById('l-email').value.trim();
   const p = document.getElementById('l-pw').value;
-  auth.signInWithEmailAndPassword(e, p).catch(() => toast('帳號或密碼錯誤'));
+  justAuthenticated = true;
+  auth.signInWithEmailAndPassword(e, p).catch(() => { justAuthenticated = false; toast('帳號或密碼錯誤'); });
 }
 function logout(){ auth.signOut(); }
+
+function goToSite(){
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('site').style.display = 'block';
+  const tb = document.getElementById('dash-tab-bar');
+  if(tb) tb.classList.remove('show');
+  window.scrollTo(0, 0);
+}
 
 // ══════════════════════════════════════════
 //  DASHBOARD
