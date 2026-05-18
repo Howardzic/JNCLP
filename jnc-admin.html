@@ -839,7 +839,13 @@ function renderPerf() {
     return `<div class="perf-aff-card">
       <div class="perf-aff-top">
         <div><div class="perf-aff-name">${u.name}</div><div class="perf-aff-email">${email}</div></div>
-        <div class="perf-code-badge">${affCode}</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${u.affCode
+            ? `<div class="perf-code-badge" style="cursor:pointer" onclick="navigator.clipboard.writeText('${u.affCode}');toast('已複製邀請碼 ${u.affCode}')" title="點擊複製邀請碼">${u.affCode}</div>`
+            : `<div class="perf-code-badge" style="color:var(--muted);border-color:rgba(184,150,90,.2)">尚未分配</div>
+               <button class="btn-sm btn-solid-gold" onclick="assignAffCode('${email}')">生成推薦碼</button>`
+          }
+        </div>
       </div>
       ${u.affCode ? `<div class="perf-aff-link" onclick="navigator.clipboard.writeText('${refLink}');toast('已複製推廣連結')" title="點擊複製推廣連結">🔗 ${refLink}</div>` : ''}
       <div class="perf-stats-row">
@@ -857,6 +863,14 @@ function renderPerf() {
       </div>` : ''}
     </div>`;
   }).join('');
+}
+
+async function assignAffCode(email) {
+  const existingCodes = new Set(Object.values(USERS).map(u => u.affCode).filter(Boolean));
+  let affCode;
+  do { affCode = genAffCode(); } while (existingCodes.has(affCode));
+  await db.collection('users').doc(email).update({ affCode });
+  toast(`✅ 已為 ${USERS[email]?.name} 生成推薦碼：${affCode}`);
 }
 
 function renderMaterials() {
