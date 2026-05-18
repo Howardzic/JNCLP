@@ -6,7 +6,11 @@
       "Bash(git fetch *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "WebSearch",
+      "WebFetch(domain:deepakness.com)",
+      "Bash(git config *)",
+      "Bash(git credential *)"
     ]
   }
 }

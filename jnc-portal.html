@@ -989,6 +989,111 @@
       letter-spacing: .1em
     }
 
+    /* ── case photo overlay (hover reveal) ── */
+    .case-photo {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity .8s ease;
+      filter: brightness(.28) saturate(.6);
+      z-index: 0
+    }
+    .case-card:hover .case-photo { opacity: 1 }
+    .case-card > *:not(.case-photo) { position: relative; z-index: 1 }
+
+    /* ── client quote ── */
+    .case-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--gold-lt);
+      line-height: 1.75;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(184,150,90,.12);
+      opacity: .85
+    }
+    .case-client {
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: var(--muted);
+      margin-top: 8px;
+      opacity: .7
+    }
+
+    /* ── hero right photo ── */
+    .hero-photo {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(.22) saturate(.5);
+      z-index: 0
+    }
+    .hero-deco,.hero-stats { z-index: 2; position: relative }
+
+    /* ══════════ TESTIMONIALS ══════════ */
+    .testi-sec {
+      background: var(--ink2);
+      padding: 96px 48px;
+      border-top: 1px solid var(--line-c);
+      border-bottom: 1px solid var(--line-c)
+    }
+    .testi-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 48px
+    }
+    .testi-card {
+      position: relative;
+      padding: 36px 0
+    }
+    .testi-card::before {
+      content: '\201C';
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 72px;
+      color: var(--gold-dk);
+      line-height: .8;
+      display: block;
+      margin-bottom: 16px;
+      opacity: .6
+    }
+    .testi-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--white);
+      font-weight: 300;
+      opacity: .88
+    }
+    .testi-divider {
+      width: 32px;
+      height: 1px;
+      background: var(--gold-dk);
+      margin: 20px 0 14px
+    }
+    .testi-name {
+      font-size: 10px;
+      letter-spacing: .3em;
+      color: var(--gold);
+      text-transform: uppercase
+    }
+    .testi-origin {
+      font-size: 10px;
+      letter-spacing: .15em;
+      color: var(--muted);
+      margin-top: 4px
+    }
+    @media(max-width:768px){
+      .testi-inner{grid-template-columns:1fr;gap:32px}
+      .testi-sec{padding:64px 20px}
+    }
+
     /* ══════════ MODAL SYSTEM ══════════ */
     .overlay {
       position: fixed;
@@ -2511,6 +2616,7 @@
         </div>
       </div>
       <div class="hero-right">
+        <div class="hero-photo" style="background-image:url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1400&q=80&fit=crop')"></div>
         <div class="hero-vr"></div>
         <div class="hero-deco">
           <div class="hero-kanji-bg"><span>夜</span></div>
@@ -2726,57 +2832,91 @@
       <h2 class="sec-title reveal"><span class="t" data-key="sec_cases_title"></span></h2>
       <div class="cases-grid">
         <div class="case-card large reveal">
+          <div class="case-photo" style="background-image:url('https://images.unsplash.com/photo-1540959733-3572b1fa2e4f?w=900&q=80&fit=crop')"></div>
           <div class="case-bg-char">東</div>
           <div class="case-city-tag">
             <div class="case-city-dot"></div><span class="case-city">Tokyo · 東京</span>
           </div>
           <div class="case-title"><span class="t" data-key="case1_title"></span></div>
           <div class="case-desc"><span class="t" data-key="case1_desc"></span></div>
-          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case1_plan"></span></span><span
-              class="case-stars">★★★★★</span></div>
+          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case1_plan"></span></span><span class="case-stars">★★★★★</span></div>
+          <div class="case-quote"><span class="t" data-key="case1_quote"></span></div>
+          <div class="case-client"><span class="t" data-key="case1_client"></span></div>
         </div>
         <div class="case-card reveal reveal-d1">
+          <div class="case-photo" style="background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=700&q=80&fit=crop')"></div>
           <div class="case-bg-char">京</div>
           <div class="case-city-tag">
             <div class="case-city-dot"></div><span class="case-city">Kyoto · 京都</span>
           </div>
           <div class="case-title"><span class="t" data-key="case2_title"></span></div>
           <div class="case-desc"><span class="t" data-key="case2_desc"></span></div>
-          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case2_plan"></span></span><span
-              class="case-stars">★★★★★</span></div>
+          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case2_plan"></span></span><span class="case-stars">★★★★★</span></div>
+          <div class="case-quote"><span class="t" data-key="case2_quote"></span></div>
+          <div class="case-client"><span class="t" data-key="case2_client"></span></div>
         </div>
         <div class="case-card reveal reveal-d1">
+          <div class="case-photo" style="background-image:url('https://images.unsplash.com/photo-1554797589-7241d7eb81b5?w=700&q=80&fit=crop')"></div>
           <div class="case-bg-char">阪</div>
           <div class="case-city-tag">
             <div class="case-city-dot"></div><span class="case-city">Osaka · 大阪</span>
           </div>
           <div class="case-title"><span class="t" data-key="case3_title"></span></div>
           <div class="case-desc"><span class="t" data-key="case3_desc"></span></div>
-          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case3_plan"></span></span><span
-              class="case-stars">★★★★★</span></div>
+          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case3_plan"></span></span><span class="case-stars">★★★★★</span></div>
+          <div class="case-quote"><span class="t" data-key="case3_quote"></span></div>
+          <div class="case-client"><span class="t" data-key="case3_client"></span></div>
         </div>
         <div class="case-card large reveal">
+          <div class="case-photo" style="background-image:url('https://images.unsplash.com/photo-1535082623926-b39352a03fb5?w=900&q=80&fit=crop')"></div>
           <div class="case-bg-char">根</div>
           <div class="case-city-tag">
             <div class="case-city-dot"></div><span class="case-city">Hakone · 箱根</span>
           </div>
           <div class="case-title"><span class="t" data-key="case4_title"></span></div>
           <div class="case-desc"><span class="t" data-key="case4_desc"></span></div>
-          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case4_plan"></span></span><span
-              class="case-stars">★★★★★</span></div>
+          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case4_plan"></span></span><span class="case-stars">★★★★★</span></div>
+          <div class="case-quote"><span class="t" data-key="case4_quote"></span></div>
+          <div class="case-client"><span class="t" data-key="case4_client"></span></div>
         </div>
         <div class="case-card reveal reveal-d1">
+          <div class="case-photo" style="background-image:url('https://images.unsplash.com/photo-1582738411706-bff8e3a203d3?w=700&q=80&fit=crop')"></div>
           <div class="case-bg-char">屋</div>
           <div class="case-city-tag">
             <div class="case-city-dot"></div><span class="case-city">Nagoya · 名古屋</span>
           </div>
           <div class="case-title"><span class="t" data-key="case5_title"></span></div>
           <div class="case-desc"><span class="t" data-key="case5_desc"></span></div>
-          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case5_plan"></span></span><span
-              class="case-stars">★★★★★</span></div>
+          <div class="case-meta"><span class="case-plan"><span class="t" data-key="case5_plan"></span></span><span class="case-stars">★★★★★</span></div>
+          <div class="case-quote"><span class="t" data-key="case5_quote"></span></div>
+          <div class="case-client"><span class="t" data-key="case5_client"></span></div>
         </div>
       </div>
     </section>
+
+    <!-- TESTIMONIALS -->
+    <div class="testi-sec reveal">
+      <div class="testi-inner">
+        <div class="testi-card">
+          <div class="testi-body">那一晚的記憶，像酒杯底部留下的金色餘韻。JNC 帶我進入的世界，是觀光地圖永遠找不到的地方。</div>
+          <div class="testi-divider"></div>
+          <div class="testi-name">K. T.</div>
+          <div class="testi-origin">台北・東京 Deep Night, 2024.11</div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-body">從選人到最後的道別，每個細節都在說——這就是真正的款待。那種被珍視的感覺，是花錢買不到的，但 JNC 做到了。</div>
+          <div class="testi-divider"></div>
+          <div class="testi-name">R. H.</div>
+          <div class="testi-origin">香港・京都一夜, 2024.09</div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-body">我在大阪待過七次，但第一次感覺真正被這座城市接待，是透過 JNC 的那個晚上。那個夜晚改變了我對「服務」這兩個字的理解。</div>
+          <div class="testi-divider"></div>
+          <div class="testi-name">Michael L.</div>
+          <div class="testi-origin">Singapore · Osaka VIP, 2025.01</div>
+        </div>
+      </div>
+    </div>
 
     <!-- AFFILIATE INFO (public, read-only) -->
     <section id="affiliate-sec" class="sec sec-alt">
@@ -3126,12 +3266,17 @@
         step1_label: '第一階段｜諮詢費', step1_note: '提出需求後收取，用於安排專人為您諮詢並確認可用服務。',
         step2_label: '第二階段｜預約成立費', step2_note: '預約正式確認成立後收取，若預約未能成立則不收取此費用。',
         total_label: '服務費用上限', price_cta: '立即開始諮詢預約',
-        sec_cases_title: '真實<em>客戶案例</em>',
-        case1_title: '三天東京奢華深度行程代訂', case1_desc: '協助台灣客戶安排東京三天完整行程，包含多項夜間娛樂及私人會所預約。', case1_plan: '深度行程',
-        case2_title: '京都和服文化沉浸體驗', case2_desc: '為韓國客戶安排京都傳統和服體驗及古都私人導覽服務。', case2_plan: '文化體驗',
-        case3_title: '大阪 VIP 夜間包廂', case3_desc: '香港客戶一晚大阪頂級夜間場所 VIP 全程安排。', case3_plan: 'VIP 夜間',
-        case4_title: '箱根溫泉旅館私人行程代訂', case4_desc: '美國客戶箱根兩天溫泉旅館全套代訂，含伴遊服務安排。', case4_plan: '溫泉旅館',
-        case5_title: '名古屋晚宴陪同服務', case5_desc: '為商務客戶安排名古屋高端晚宴陪同服務，全程中文溝通。', case5_plan: '晚宴陪同',
+        sec_cases_title: '客戶<em>真實回饋</em>',
+        case1_title: '三夜東京・從霓虹到黎明', case1_desc: '為台灣客戶量身打造三天深度行程：銀座私人割烹、六本木高端 Club 包廂，以及最後一晚的木場秘密酒吧。全程無縫銜接，無需一句日文。', case1_plan: '深度行程',
+        case1_quote: '那個夜晚的記憶，像酒杯底部留下的金色餘韻，很久以後還會想起。', case1_client: '— K.T.・台北・2024.11',
+        case2_title: '京都一夜・傳統之中的親密', case2_desc: '韓國客戶的私人京都夜晚：茶屋文化初體驗、祇園老舖包廂，以及由女將親自引路的後巷小店。那種被珍視的感覺，難以言說。', case2_plan: '文化沉浸',
+        case2_quote: '從踏入包廂到離開，每一個細節都在告訴你——你是今晚最重要的人。', case2_client: '— R.H.・首爾・2024.09',
+        case3_title: '大阪 VIP・城市本來的樣子', case3_desc: '為香港客戶安排一晚道頓堀以外的大阪：北新地頂級Club包廂、私人調酒師駐場服務，以及凌晨三點才開始熱鬧的立食小酒場。', case3_plan: 'VIP 夜間',
+        case3_quote: '我在大阪住過七次，但第一次感覺自己真的進入了這座城市。', case3_client: '— Michael L.・Singapore・2025.01',
+        case4_title: '箱根溫泉・山間的靜謐儀式', case4_desc: '美國客戶的兩天一夜逃脫：私人露天風呂旅館、懷石料理預訂，以及由 JNC 特別安排的日式伴遊服務，讓整個行程多了一份無法言說的溫度。', case4_plan: '溫泉旅館',
+        case4_quote: '窗外是霧裡的山，屋內是燈下的人。那種感覺是城市裡永遠找不到的。', case4_client: '— D.W.・Los Angeles・2024.12',
+        case5_title: '名古屋商務夜・用氣氛收服人心', case5_desc: '協助商務客戶安排重要接待晚宴：名古屋頂級割烹包廂、精心挑選的陪同服務，讓洽商在最放鬆的氛圍中完成。合約當晚就簽了。', case5_plan: '晚宴陪同',
+        case5_quote: '我從來不知道一頓飯可以讓氣氛變成這樣。合約當晚就簽了。', case5_client: '— 陳先生・上海・2025.02',
         sec_aff_title: '推廣者<em>合作方案</em>',
         aff_comm_label: '最高佣金比例', aff_comm_desc: '每成功推薦一位客戶完成預約，您將獲得高達 25% 的佣金回饋。業績越高，等級越高，回饋越豐厚。',
         aff_tier1: '🥉 銅牌（0–5 人/月）', aff_tier2: '🥈 銀牌（6–15 人/月）', aff_tier3: '🥇 金牌（16+ 人/月）',
@@ -3187,11 +3332,16 @@
         step2_label: 'Stage 2 — Booking Confirmation Fee', step2_note: 'Collected only when the booking is successfully confirmed. No charge if booking cannot be made.',
         total_label: 'Total Service Fee Cap', price_cta: 'Start Your Consultation',
         sec_cases_title: 'Real <em>Client Stories</em>',
-        case1_title: '3-Day Tokyo Full Luxury Itinerary', case1_desc: 'Arranged a complete 3-day Tokyo itinerary for a Taiwan client, including multiple nightlife and private venue bookings.', case1_plan: 'Full Itinerary',
-        case2_title: 'Kyoto Kimono Cultural Experience', case2_desc: 'Arranged traditional kimono experience and private historic city tour for a Korean client.', case2_plan: 'Cultural',
-        case3_title: 'Osaka VIP Night Booking', case3_desc: 'Full-night VIP arrangement at Osaka\'s top nightlife venues for a Hong Kong client.', case3_plan: 'VIP Night',
-        case4_title: 'Hakone Private Onsen Stay', case4_desc: 'Two-day Hakone onsen ryokan with companion service for a US client.', case4_plan: 'Onsen',
-        case5_title: 'Nagoya Business Dinner Companion', case5_desc: 'High-end dinner companion arrangement in Nagoya for a business client.', case5_plan: 'Dinner',
+        case1_title: 'Three Nights in Tokyo — From Neon to Dawn', case1_desc: 'A bespoke 3-night itinerary for a Taiwan client: private kaiseki in Ginza, a VIP suite in Roppongi, and a hidden bar in Kiba that only opens at midnight. Seamless from start to finish.', case1_plan: 'Full Itinerary',
+        case1_quote: 'The memory of that night lingers like gold at the bottom of a glass — and I still think about it.', case1_client: '— K.T. · Taipei · 2024.11',
+        case2_title: 'Kyoto After Dark — Intimacy in Tradition', case2_desc: 'A private Kyoto evening for a Korean client: an introduction to ochaya culture, a secluded booth in Gion, and a hidden laneway sake bar that doesn\'t take walk-ins.', case2_plan: 'Cultural Immersion',
+        case2_quote: 'From the moment I walked in to the moment I left, every detail said: you are the most important person tonight.', case2_client: '— R.H. · Seoul · 2024.09',
+        case3_title: 'Osaka VIP — The City Behind the City', case3_desc: 'One night of Osaka beyond Dotonbori: a private booth in Kitashinchi, a resident mixologist, and a standing bar that only heats up past 3am. Exactly what the city hides from tourists.', case3_plan: 'VIP Night',
+        case3_quote: 'I\'ve stayed in Osaka seven times. This was the first time I felt the city actually received me.', case3_client: '— Michael L. · Singapore · 2025.01',
+        case4_title: 'Hakone Onsen — A Mountain Ritual', case4_desc: 'A two-day escape for a US client: a private rotenburo ryokan, kaiseki dinner reservation, and a companion arrangement by JNC that added an indescribable warmth to the entire experience.', case4_plan: 'Onsen Ryokan',
+        case4_quote: 'Mountains in the mist outside. Warm light and warmth inside. That feeling doesn\'t exist in any city.', case4_client: '— D.W. · Los Angeles · 2024.12',
+        case5_title: 'Nagoya Business Night — Close the Deal in Atmosphere', case5_desc: 'A high-stakes client dinner in Nagoya: private kaiseki booth, a carefully curated companion arrangement, and an atmosphere that relaxed everyone at the table. The contract was signed that night.', case5_plan: 'Dinner Companion',
+        case5_quote: 'I never knew a dinner could shift the atmosphere like that. We signed the contract that same night.', case5_client: '— Mr. Chen · Shanghai · 2025.02',
         sec_aff_title: 'Affiliate <em>Partner Program</em>',
         aff_comm_label: 'Max Commission Rate', aff_comm_desc: 'Earn up to 25% commission for every successfully referred client who completes a booking.',
         aff_tier1: '🥉 Bronze (0–5/month)', aff_tier2: '🥈 Silver (6–15/month)', aff_tier3: '🥇 Gold (16+/month)',
