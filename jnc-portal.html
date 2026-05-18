@@ -960,6 +960,11 @@ footer{background:var(--ink2);padding:64px 48px 32px;border-top:1px solid var(--
 
 <div id="toast"></div>
 
+<!-- Firebase SDK (compat v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
 // ══════════════════════════════════════════
 //  TRANSLATIONS
@@ -1192,27 +1197,54 @@ const T = {
 };
 
 // ══════════════════════════════════════════
-//  MOCK DATA
+//  FIREBASE INIT
 // ══════════════════════════════════════════
-const USERS = {
-  'admin@jnc.jp':   {pw:'Sakura@Admin2024',name:'Administrator',role:'admin',points:0,history:[]},
-  'member@jnc.jp':  {pw:'Member@2024',name:'山田 健一',role:'member',points:500,history:[
-    {date:'2024-12-01',desc:'諮詢費儲值',type:'plus',amt:500,bal:500},
-    {date:'2024-11-20',desc:'歡迎積分',type:'plus',amt:200,bal:0},
-  ]},
-  'promo1@jnc.jp':  {pw:'Promo@2024',name:'陳小明',role:'affiliate_pending',points:200,history:[
-    {date:'2024-11-25',desc:'歡迎積分',type:'plus',amt:200,bal:200},
-  ]},
-  'promo2@jnc.jp':  {pw:'Promo@2024',name:'Kim Jiyeon',role:'affiliate_approved',points:1800,history:[
-    {date:'2024-12-05',desc:'推廣佣金 — 3名客戶',type:'plus',amt:1200,bal:1800},
-    {date:'2024-11-28',desc:'諮詢費儲值',type:'plus',amt:500,bal:600},
-    {date:'2024-11-20',desc:'歡迎積分',type:'plus',amt:200,bal:100},
-    {date:'2024-11-22',desc:'積分兌換折抵',type:'minus',amt:100,bal:200},
-  ]},
-};
+firebase.initializeApp({
+  apiKey: "AIzaSyA_VWjIGwDUHUtY3_sWaiBwB1qHbkcNe4o",
+  authDomain: "jnclp-72ec4.firebaseapp.com",
+  projectId: "jnclp-72ec4",
+  storageBucket: "jnclp-72ec4.firebasestorage.app",
+  messagingSenderId: "662782169734",
+  appId: "1:662782169734:web:f883757697ced585507707"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 let currentLang = 'zh';
 let currentUser = null;
+let unsubUser   = null;
+
+// ══════════════════════════════════════════
+//  AUTH STATE
+// ══════════════════════════════════════════
+auth.onAuthStateChanged(fbUser => {
+  if (fbUser) {
+    const email = fbUser.email;
+    if (unsubUser) unsubUser();
+    unsubUser = db.collection('users').doc(email).onSnapshot(snap => {
+      if (!snap.exists) return;
+      currentUser = { ...snap.data(), _email: email };
+      if (currentUser.role === 'admin') { window.location.href = 'jnc-admin.html'; return; }
+      ['btn-login','btn-book'].forEach(id => document.getElementById(id).style.display = 'none');
+      ['btn-dash','btn-logout'].forEach(id => document.getElementById(id).style.display = '');
+      const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
+      if (md) md.style.display = ''; if (ml) ml.style.display = '';
+      closeModal('login'); closeModal('register');
+      openDash();
+    });
+  } else {
+    currentUser = null;
+    if (unsubUser) { unsubUser(); unsubUser = null; }
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('site').style.display = 'block';
+    ['btn-login','btn-book'].forEach(id => document.getElementById(id).style.display = '');
+    ['btn-dash','btn-logout'].forEach(id => document.getElementById(id).style.display = 'none');
+    const md = document.getElementById('mob-btn-dash'), ml = document.getElementById('mob-btn-logout');
+    if (md) md.style.display = 'none'; if (ml) ml.style.display = 'none';
+    const tb = document.getElementById('dash-tab-bar');
+    if (tb) tb.classList.remove('show');
+  }
+});
 
 // ══════════════════════════════════════════
 //  LANG
@@ -1285,59 +1317,43 @@ function goStep(n){
   });
 }
 function regStep2(){
-  const email = document.getElementById('r-email').value;
+  const email = document.getElementById('r-email').value.trim();
+  const pw    = document.getElementById('r-pw').value;
   if(!email){toast('請填寫 Email');return;}
+  if(pw.length < 6){toast('密碼長度至少需要 6 位');return;}
   buildQR();
   goStep(2);
 }
 function regStep3(){goStep(3)}
-function finishReg(){
-  const name = document.getElementById('r-name').value||'新會員';
-  const email = document.getElementById('r-email').value||'new@jnc.jp';
-  const pw = document.getElementById('r-pw').value||'';
-  USERS[email]={pw,name,role:'member',points:200,history:[
-    {date:today(),desc:'歡迎積分',type:'plus',amt:200,bal:200}
-  ]};
-  closeModal('register');
-  loginAs(email);
-  toast('🌸 歡迎加入 JNC！已獲得 200 歡迎積分');
+async function finishReg(){
+  const name  = document.getElementById('r-name').value.trim() || '新會員';
+  const email = document.getElementById('r-email').value.trim();
+  const pw    = document.getElementById('r-pw').value;
+  const phone = document.getElementById('r-phone').value.trim();
+  if(!email || !pw){toast('請填寫 Email 與密碼');return;}
+  try {
+    await auth.createUserWithEmailAndPassword(email, pw);
+    await db.collection('users').doc(email).set({
+      name, phone, role:'member', points:200, joined:today(),
+      history:[{date:today(),desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:200}]
+    });
+    toast('🌸 歡迎加入 JNC！已獲得 200 歡迎積分');
+  } catch(err) {
+    if(err.code==='auth/email-already-in-use') toast('此 Email 已被使用，請直接登入');
+    else if(err.code==='auth/weak-password') toast('密碼長度至少需要 6 位');
+    else toast('註冊失敗，請稍後重試');
+  }
 }
 
 // ══════════════════════════════════════════
-//  LOGIN
+//  LOGIN / LOGOUT
 // ══════════════════════════════════════════
 function doLogin(){
   const e = document.getElementById('l-email').value.trim();
   const p = document.getElementById('l-pw').value;
-  const u = USERS[e];
-  if(!u||u.pw!==p){toast('帳號或密碼錯誤');return;}
-  closeModal('login');
-  loginAs(e);
+  auth.signInWithEmailAndPassword(e, p).catch(() => toast('帳號或密碼錯誤'));
 }
-function loginAs(email){
-  currentUser = USERS[email];
-  currentUser._email = email;
-  if(currentUser.role==='admin'){
-    window.location.href='jnc-admin.html';
-    return;
-  }
-  // show/hide nav buttons
-  document.getElementById('btn-login').style.display='none';
-  document.getElementById('btn-book').style.display='none';
-  document.getElementById('btn-dash').style.display='';
-  document.getElementById('btn-logout').style.display='';
-  openDash();
-}
-function logout(){
-  currentUser=null;
-  document.getElementById('btn-login').style.display='';
-  document.getElementById('btn-book').style.display='';
-  document.getElementById('btn-dash').style.display='none';
-  document.getElementById('btn-logout').style.display='none';
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('site').style.display='block';
-  window.scrollTo(0,0);
-}
+function logout(){ auth.signOut(); }
 
 // ══════════════════════════════════════════
 //  DASHBOARD
@@ -1347,32 +1363,36 @@ function openDash(){
   document.getElementById('dashboard').style.display='block';
   window.scrollTo(0,0);
   renderDash();
+  const tb = document.getElementById('dash-tab-bar');
+  if(window.innerWidth<=768 && tb) tb.classList.add('show');
 }
-function renderDash(){
+
+async function renderDash(){
   const u = currentUser;
+  if(!u) return;
   const d = T[currentLang];
   document.getElementById('dash-uname').textContent = u.name;
   const roleLabel = {member:'MEMBER',affiliate_pending:'AFFILIATE · PENDING',affiliate_approved:'AFFILIATE · GOLD'}[u.role]||'MEMBER';
   document.getElementById('dash-urole').textContent = roleLabel;
 
-  // nav affiliate tab
   const navMats = document.getElementById('nav-mats');
   navMats.style.display = (u.role==='affiliate_pending'||u.role==='affiliate_approved') ? '' : 'none';
+  const tabMats = document.getElementById('tab-mats');
+  if(tabMats) tabMats.style.display = (u.role==='affiliate_pending'||u.role==='affiliate_approved') ? '' : 'none';
 
-  // points
-  document.getElementById('pts-display').textContent = u.points.toLocaleString();
-  const earned = u.history.filter(h=>h.type==='plus').reduce((s,h)=>s+h.amt,0);
-  const used   = u.history.filter(h=>h.type==='minus').reduce((s,h)=>s+h.amt,0);
-  document.getElementById('pts-total-sessions').textContent = u.history.filter(h=>h.desc.includes('諮詢')||h.desc.includes('Booking')||h.desc.includes('予約')||h.desc.includes('상담')).length||1;
+  document.getElementById('pts-display').textContent = (u.points||0).toLocaleString();
+  const history = u.history||[];
+  const earned = history.filter(h=>h.type==='plus').reduce((s,h)=>s+h.amt,0);
+  const used   = history.filter(h=>h.type==='minus').reduce((s,h)=>s+h.amt,0);
+  document.getElementById('pts-total-sessions').textContent = history.filter(h=>h.desc&&(h.desc.includes('諮詢')||h.desc.includes('Booking')||h.desc.includes('予約')||h.desc.includes('상담'))).length||0;
   document.getElementById('pts-total-earned').textContent = earned.toLocaleString();
   document.getElementById('pts-total-used').textContent   = used.toLocaleString();
 
-  // timeline
   const tl = document.getElementById('tl-list');
-  if(!u.history.length){
+  if(!history.length){
     tl.innerHTML=`<div style="padding:20px 0;text-align:center;font-size:13px;color:var(--muted)">暫無紀錄</div>`;
   } else {
-    tl.innerHTML = u.history.map(h=>`
+    tl.innerHTML = history.map(h=>`
       <div class="tl-item">
         <div class="tl-dot ${h.type}"></div>
         <div class="tl-date">${h.date}</div>
@@ -1384,39 +1404,27 @@ function renderDash(){
       </div>`).join('');
   }
 
-  // materials panel
-  const statusBar = document.getElementById('aff-status-bar');
+  const statusBar   = document.getElementById('aff-status-bar');
   const matsContent = document.getElementById('mats-content');
   if(u.role==='affiliate_pending'){
     statusBar.innerHTML=`<div class="aff-status pending"><div class="aff-status-dot"></div><div class="aff-status-txt">${d.aff_pending_txt}</div></div>`;
     matsContent.innerHTML='';
   } else if(u.role==='affiliate_approved'){
     statusBar.innerHTML=`<div class="aff-status approved"><div class="aff-status-dot"></div><div class="aff-status-txt">${d.aff_approved_txt}</div></div>`;
-    matsContent.innerHTML=`
-      <div class="mat-grid">
-        <div class="mat-card" onclick="toast('正在開啟應用...')">
-          <div class="mat-card-ico">🧠</div>
-          <div class="mat-card-name">${d.mat1_name}</div>
-          <div class="mat-card-desc">${d.mat1_desc}</div>
-          <span class="mat-card-tag">${d.available}</span>
-          <div class="mat-card-link">→ ${d.available}</div>
-        </div>
-        <div class="mat-card">
-          <div class="mat-card-ico">📖</div>
-          <div class="mat-card-name">${d.mat2_name}</div>
-          <div class="mat-card-desc">${d.mat2_desc}</div>
-          <span class="mat-card-tag coming">${d.coming}</span>
-        </div>
-        <div class="mat-card">
-          <div class="mat-card-ico">🗾</div>
-          <div class="mat-card-name">${d.mat3_name}</div>
-          <div class="mat-card-desc">${d.mat3_desc}</div>
-          <span class="mat-card-tag coming">${d.coming}</span>
-        </div>
-      </div>`;
+    const snap = await db.collection('materials').orderBy('order').get();
+    const mats = snap.docs.map(doc=>doc.data());
+    matsContent.innerHTML = mats.length
+      ? `<div class="mat-grid">${mats.map(m=>`
+          <div class="mat-card" ${m.url?`onclick="window.open('${m.url}','_blank')"`:''}>
+            <div class="mat-card-ico">📦</div>
+            <div class="mat-card-name">${m.name}</div>
+            <div class="mat-card-desc">${m.desc}</div>
+            <span class="mat-card-tag ${m.status!=='active'?'coming':''}">${m.status==='active'?d.available:d.coming}</span>
+            ${m.url?`<div class="mat-card-link">→ ${d.available}</div>`:''}
+          </div>`).join('')}</div>`
+      : `<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">暫無素材</div>`;
   } else {
-    statusBar.innerHTML='';
-    matsContent.innerHTML='';
+    statusBar.innerHTML=''; matsContent.innerHTML='';
   }
 
   renderText();
@@ -1432,10 +1440,18 @@ function switchPanel(id){
 // ══════════════════════════════════════════
 //  AFFILIATE SUBMIT
 // ══════════════════════════════════════════
-function submitAff(){
-  const n=document.getElementById('aff-name').value;
-  const e=document.getElementById('aff-email').value;
-  if(!n||!e){toast('請填寫姓名與 Email');return;}
+async function submitAff(){
+  const name    = document.getElementById('aff-name').value.trim();
+  const email   = document.getElementById('aff-email').value.trim();
+  const channel = document.getElementById('aff-channel')?.value||'';
+  const volume  = document.getElementById('aff-volume')?.value||'';
+  if(!name||!email){toast('請填寫姓名與 Email');return;}
+  if(currentUser){
+    await db.collection('users').doc(currentUser._email).update({
+      role:'affiliate_pending',
+      affApp:{channel,volume,date:today()}
+    });
+  }
   toast('✅ 申請已提交！我們將在 48 小時內與您聯繫。');
 }
 
@@ -1476,62 +1492,11 @@ function closeMobileNav(){
   document.body.style.overflow = '';
 }
 
-// sync mobile lang buttons
-const _origSetLang = setLang;
-// update mobile lang active state when lang changes
 function updateMobileLangBtns(code){
   ['zh','en','ja','ko'].forEach(l=>{
     const b = document.getElementById('mlang-'+l);
     if(b) b.classList.toggle('active', l===code);
   });
-}
-
-// ══════════════════════════════════════════
-//  DASHBOARD MOBILE UPDATES
-// ══════════════════════════════════════════
-const _origOpenDash = openDash;
-function openDash(){
-  document.getElementById('site').style.display='none';
-  document.getElementById('dashboard').style.display='block';
-  window.scrollTo(0,0);
-  renderDash();
-  // show mobile tab bar
-  const tb = document.getElementById('dash-tab-bar');
-  if(window.innerWidth<=768) tb.classList.add('show');
-  // show/hide mats tab
-  const u = currentUser;
-  const tabMats = document.getElementById('tab-mats');
-  if(tabMats) tabMats.style.display = (u&&(u.role==='affiliate_pending'||u.role==='affiliate_approved')) ? '' : 'none';
-}
-
-const _origLogout = logout;
-function logout(){
-  currentUser=null;
-  ['btn-login','btn-book'].forEach(id=>document.getElementById(id).style.display='');
-  ['btn-dash','btn-logout'].forEach(id=>document.getElementById(id).style.display='none');
-  ['mob-btn-dash','mob-btn-logout'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('site').style.display='block';
-  document.getElementById('dash-tab-bar').classList.remove('show');
-  window.scrollTo(0,0);
-}
-
-// override loginAs to also update mobile buttons
-const _origLoginAs = loginAs;
-function loginAs(email){
-  currentUser = USERS[email];
-  currentUser._email = email;
-  if(currentUser.role==='admin'){
-    window.location.href='jnc-admin.html';
-    return;
-  }
-  ['btn-login','btn-book'].forEach(id=>document.getElementById(id).style.display='none');
-  ['btn-dash','btn-logout'].forEach(id=>document.getElementById(id).style.display='');
-  const md = document.getElementById('mob-btn-dash');
-  const ml = document.getElementById('mob-btn-logout');
-  if(md) md.style.display='';
-  if(ml) ml.style.display='';
-  openDash();
 }
 
 function setTabActive(el){
