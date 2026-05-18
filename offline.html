@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c0b09">
+<title>JNC — 離線中</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--gold:#b8965a;--gold-lt:#d4b483;--gold-dk:#7a5e2e;--ink:#0c0b09;--ink2:#141210;--ink3:#1c1a16;--text:#cdc4b0;--muted:#6e6555;--line:rgba(184,150,90,.12)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Noto Sans TC',sans-serif}
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Noto+Sans+TC:wght@300;400&family=Shippori+Mincho:wght@400&display=swap');
+body{background:var(--ink);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;overflow:hidden}
+
+/* bg decoration */
+body::before{content:'無';position:fixed;font-family:'Shippori Mincho',serif;font-size:400px;color:rgba(184,150,90,.03);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;user-select:none;line-height:1}
+
+/* grid lines */
+body::after{content:'';position:fixed;inset:0;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(184,150,90,.03) 60px,rgba(184,150,90,.03) 61px),
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(184,150,90,.03) 60px,rgba(184,150,90,.03) 61px);
+  pointer-events:none}
+
+.card{background:var(--ink2);border:1px solid var(--line);padding:48px 40px;max-width:440px;width:100%;text-align:center;position:relative;z-index:2}
+
+/* icon */
+.icon-wrap{width:80px;height:80px;margin:0 auto 28px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative}
+.icon-wrap::before{content:'';position:absolute;inset:-4px;border:1px solid rgba(184,150,90,.08)}
+.icon-svg{width:36px;height:36px;color:var(--gold)}
+
+.logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.35em;color:var(--gold);margin-bottom:28px;text-transform:uppercase}
+
+.title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,6vw,40px);font-weight:300;color:#f5f2ec;line-height:1.15;margin-bottom:12px}
+.title em{font-style:italic;color:var(--gold)}
+
+.desc{font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:32px;max-width:320px;margin-left:auto;margin-right:auto}
+
+.divider{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dk),transparent);margin:0 auto 28px}
+
+/* status row */
+.status-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.status-txt{font-size:12px;letter-spacing:.15em;color:var(--muted)}
+
+/* actions */
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn-retry{padding:13px 32px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:var(--ink);font-size:12px;letter-spacing:.22em;font-weight:500;border:none;cursor:pointer;transition:all .4s;font-family:'Noto Sans TC',sans-serif;width:100%}
+.btn-retry:hover{box-shadow:0 6px 24px rgba(184,150,90,.25);transform:translateY(-1px)}
+.btn-back{padding:13px 32px;background:none;border:1px solid rgba(184,150,90,.25);color:var(--gold);font-size:12px;letter-spacing:.22em;cursor:pointer;transition:all .4s;font-family:'Noto Sans TC',sans-serif;width:100%}
+.btn-back:hover{border-color:var(--gold);background:rgba(184,150,90,.04)}
+
+/* lang tabs */
+.lang-row{display:flex;justify-content:center;gap:0;margin-bottom:32px;border:1px solid var(--line)}
+.lang-tab{padding:7px 18px;font-size:11px;letter-spacing:.1em;color:var(--muted);cursor:pointer;transition:all .25s;background:none;border:none;font-family:'Noto Sans TC',sans-serif}
+.lang-tab.active,.lang-tab:hover{color:var(--gold);background:rgba(184,150,90,.06)}
+
+/* footer note */
+.footer-note{margin-top:24px;font-size:11px;color:var(--muted);letter-spacing:.08em;opacity:.6}
+
+/* online restore banner */
+#online-banner{position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#1a3a1a,#0f2a0f);border-bottom:1px solid rgba(39,174,96,.3);padding:14px 24px;display:none;align-items:center;justify-content:space-between;z-index:100}
+#online-banner.show{display:flex}
+.ob-txt{font-size:13px;color:#81c784;display:flex;align-items:center;gap:8px}
+.ob-dot{width:7px;height:7px;border-radius:50%;background:#4caf50}
+.ob-btn{padding:6px 18px;background:#27ae60;border:none;color:#fff;font-size:11px;letter-spacing:.12em;cursor:pointer;transition:background .3s;font-family:'Noto Sans TC',sans-serif}
+.ob-btn:hover{background:#219a52}
+</style>
+</head>
+<body>
+
+<div id="online-banner">
+  <div class="ob-txt"><div class="ob-dot"></div><span id="ob-msg">網路已恢復連線</span></div>
+  <button class="ob-btn" onclick="goOnline()">重新載入</button>
+</div>
+
+<div class="card">
+  <div class="logo">JAPAN NIGHT CONCIERGE</div>
+
+  <div class="icon-wrap">
+    <svg class="icon-svg" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
+      <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2z"/>
+      <path d="M18 10v10M18 26v.5" stroke-linecap="round"/>
+      <path d="M8 8l2 2M26 26l2 2M28 8l-2 2M10 26l-2 2" opacity=".4" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="title" id="t-title">目前<em>無網路</em><br>連線</div>
+
+  <div class="divider"></div>
+
+  <div class="status-row">
+    <div class="status-dot"></div>
+    <div class="status-txt" id="t-status">偵測中…</div>
+  </div>
+
+  <p class="desc" id="t-desc">您目前處於離線狀態。JNC 服務需要網路連線才能運作，請確認網路後重試。</p>
+
+  <div class="lang-row">
+    <button class="lang-tab active" onclick="setLang('zh',this)">中文</button>
+    <button class="lang-tab" onclick="setLang('en',this)">EN</button>
+    <button class="lang-tab" onclick="setLang('ja',this)">日本語</button>
+    <button class="lang-tab" onclick="setLang('ko',this)">한국어</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn-retry" onclick="retryConnection()" id="btn-retry">重新嘗試連線</button>
+    <button class="btn-back" onclick="history.back()" id="btn-back">返回上一頁</button>
+  </div>
+
+  <div class="footer-note">JNC — Japan Night Concierge</div>
+</div>
+
+<script>
+const STRINGS = {
+  zh:{title:'目前<em>無網路</em><br>連線',status:'偵測中…',desc:'您目前處於離線狀態。JNC 服務需要網路連線才能運作，請確認網路後重試。',retry:'重新嘗試連線',back:'返回上一頁',online:'網路已恢復連線'},
+  en:{title:'You Are<br><em>Offline</em>',status:'Detecting…',desc:'You are currently offline. JNC services require an internet connection. Please check your network and try again.',retry:'Retry Connection',back:'Go Back',online:'Connection Restored'},
+  ja:{title:'現在<em>オフライン</em><br>です',status:'検出中…',desc:'現在オフライン状態です。JNCサービスはインターネット接続が必要です。ネットワークを確認して再試行してください。',retry:'再接続を試みる',back:'前のページへ',online:'接続が回復しました'},
+  ko:{title:'현재<br><em>오프라인</em>입니다',status:'감지 중…',desc:'현재 오프라인 상태입니다. JNC 서비스는 인터넷 연결이 필요합니다. 네트워크를 확인하고 다시 시도하세요.',retry:'다시 연결 시도',back:'이전 페이지',online:'연결이 복구되었습니다'},
+};
+
+let lang = 'zh';
+
+function setLang(l, btn){
+  lang = l;
+  document.querySelectorAll('.lang-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const s = STRINGS[l];
+  document.getElementById('t-title').innerHTML = s.title;
+  document.getElementById('t-desc').textContent = s.desc;
+  document.getElementById('t-status').textContent = navigator.onLine ? '已連線 ✓' : s.status;
+  document.getElementById('btn-retry').textContent = s.retry;
+  document.getElementById('btn-back').textContent = s.back;
+  document.getElementById('ob-msg').textContent = s.online;
+}
+
+function retryConnection(){
+  const btn = document.getElementById('btn-retry');
+  btn.style.opacity = '.6';
+  btn.disabled = true;
+  setTimeout(()=>{
+    if(navigator.onLine){
+      window.location.href = document.referrer || 'jnc-portal.html';
+    } else {
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }, 1200);
+}
+
+function goOnline(){
+  window.location.href = document.referrer || 'jnc-portal.html';
+}
+
+// monitor connectivity
+window.addEventListener('online', ()=>{
+  document.getElementById('online-banner').classList.add('show');
+  document.getElementById('t-status').textContent = '已恢復連線 ✓';
+});
+window.addEventListener('offline', ()=>{
+  document.getElementById('online-banner').classList.remove('show');
+  document.getElementById('t-status').textContent = STRINGS[lang].status;
+});
+</script>
+</body>
+</html>

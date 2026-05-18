@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0b09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JNC Admin">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>JNC Admin — 管理後台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0c0b09;--ink2:#141210;--ink3:#1c1a16;--ink4:#242118;--ink5:#2c2920;
+  --gold:#b8965a;--gold-lt:#d4b483;--gold-dk:#7a5e2e;--gold-xs:#3d2e15;
+  --paper:#f0ead8;--text:#cdc4b0;--muted:#6e6555;
+  --red:#c0392b;--red-bg:rgba(192,57,43,.1);--red-border:rgba(192,57,43,.25);
+  --green:#27ae60;--green-bg:rgba(39,174,96,.1);--green-border:rgba(39,174,96,.25);
+  --amber:#f39c12;--amber-bg:rgba(243,156,18,.1);--amber-border:rgba(243,156,18,.25);
+  --line:rgba(184,150,90,.1);--white:#f5f2ec;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-size:15px}
+body{background:var(--ink);color:var(--text);font-family:'Noto Sans TC',sans-serif;font-weight:300;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--gold-dk)}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select,textarea{font-family:'Noto Sans TC',sans-serif}
+
+/* ─── LOGIN ─── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--ink);position:relative;overflow:hidden}
+#login-screen::before{content:'管理';position:absolute;font-family:'Shippori Mincho',serif;font-size:320px;color:rgba(184,150,90,.03);font-weight:400;user-select:none;pointer-events:none}
+.login-box{background:var(--ink2);border:1px solid var(--line);padding:48px 44px;width:100%;max-width:400px;position:relative;z-index:2}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:28px;letter-spacing:.25em;color:var(--gold);margin-bottom:4px}
+.login-sub{font-size:11px;letter-spacing:.25em;color:var(--muted);margin-bottom:36px}
+.login-err{background:var(--red-bg);border:1px solid var(--red-border);padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px;display:none}
+.login-err.show{display:block}
+.f-group{margin-bottom:16px}
+.f-label{display:block;font-size:10px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:7px}
+.f-input,.f-select,.f-textarea{width:100%;padding:11px 14px;background:var(--ink3);border:1px solid rgba(255,255,255,.07);color:var(--text);font-size:13px;outline:none;transition:border-color .3s}
+.f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--gold-dk)}
+.f-select option{background:var(--ink3)}
+.f-textarea{resize:vertical;min-height:80px;line-height:1.6}
+.f-btn-full{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:var(--ink);font-size:12px;letter-spacing:.22em;font-weight:500;transition:all .4s;border:none;cursor:pointer}
+.f-btn-full:hover{box-shadow:0 6px 24px rgba(184,150,90,.22)}
+
+/* ─── ADMIN SHELL ─── */
+#admin-shell{display:none;flex:1;overflow:hidden}
+.admin-layout{display:grid;grid-template-columns:220px 1fr;height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--ink2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-brand{padding:20px 24px 16px;border-bottom:1px solid var(--line)}
+.sb-logo{font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:.2em;color:var(--gold)}
+.sb-sub{font-size:10px;letter-spacing:.2em;color:var(--muted);margin-top:2px}
+.sb-admin{padding:14px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sb-admin-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sb-admin-name{font-size:12px;color:var(--text);letter-spacing:.05em}
+.sb-admin-role{font-size:10px;color:var(--muted);letter-spacing:.1em}
+.sb-nav{padding:12px 0;flex:1}
+.sb-section{font-size:9px;letter-spacing:.35em;color:var(--muted);padding:14px 24px 6px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 24px;font-size:13px;color:var(--muted);transition:all .25s;cursor:pointer;border-left:2px solid transparent}
+.sb-item:hover{color:var(--text);background:rgba(184,150,90,.04)}
+.sb-item.active{color:var(--gold);background:rgba(184,150,90,.06);border-left-color:var(--gold)}
+.sb-ico{font-size:13px;width:18px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--amber);color:var(--ink);font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500}
+.sb-bottom{padding:16px 24px;border-top:1px solid var(--line)}
+.sb-logout{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);transition:color .3s;cursor:pointer;width:100%;background:none;border:none;padding:8px 0}
+.sb-logout:hover{color:var(--red)}
+
+/* MAIN */
+.admin-main{overflow-y:auto;background:var(--ink)}
+.page{display:none;padding:36px 40px;min-height:100%}
+.page.show{display:block}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--white);margin-bottom:4px}
+.page-title em{font-style:italic;color:var(--gold)}
+.page-sub{font-size:12px;color:var(--muted);letter-spacing:.05em;margin-bottom:28px}
+
+/* ─── STAT CARDS ─── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-bottom:28px}
+.stat-card{background:var(--ink2);padding:24px 28px;position:relative;overflow:hidden}
+.stat-card::after{content:attr(data-ico);position:absolute;right:12px;bottom:-4px;font-size:52px;opacity:.06;pointer-events:none}
+.sc-label{font-size:10px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.sc-num{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;color:var(--white);line-height:1}
+.sc-change{font-size:11px;color:var(--green);margin-top:4px}
+
+/* ─── TABLE ─── */
+.table-wrap{background:var(--ink2);border:1px solid var(--line);overflow:hidden}
+.table-toolbar{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.search-input{flex:1;max-width:280px;padding:8px 12px;background:var(--ink3);border:1px solid rgba(255,255,255,.07);color:var(--text);font-size:13px;outline:none;transition:border-color .3s}
+.search-input:focus{border-color:var(--gold-dk)}
+.search-input::placeholder{color:var(--muted)}
+.filter-select{padding:8px 12px;background:var(--ink3);border:1px solid rgba(255,255,255,.07);color:var(--text);font-size:12px;outline:none;cursor:pointer}
+.filter-select option{background:var(--ink3)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:12px 16px;text-align:left;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--line);background:var(--ink3);font-weight:400}
+tbody tr{border-bottom:1px solid var(--line);transition:background .2s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(184,150,90,.03)}
+td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
+.td-name{color:var(--white);font-weight:400}
+.td-email{color:var(--muted);font-size:12px}
+.td-pts{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold)}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;font-size:10px;letter-spacing:.12em}
+.badge-member{background:rgba(184,150,90,.1);border:1px solid rgba(184,150,90,.2);color:var(--gold-lt)}
+.badge-pending{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber)}
+.badge-approved{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.badge-suspended{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* action btns */
+.btn-sm{padding:5px 14px;font-size:11px;letter-spacing:.12em;transition:all .25s;cursor:pointer}
+.btn-outline-gold{border:1px solid var(--gold-dk);color:var(--gold);background:none}
+.btn-outline-gold:hover{background:var(--gold-dk);color:var(--paper)}
+.btn-outline-green{border:1px solid var(--green-border);color:var(--green);background:none}
+.btn-outline-green:hover{background:var(--green-bg)}
+.btn-outline-red{border:1px solid var(--red-border);color:var(--red);background:none}
+.btn-outline-red:hover{background:var(--red-bg)}
+.btn-solid-gold{background:var(--gold-dk);border:1px solid var(--gold-dk);color:var(--paper)}
+.btn-solid-gold:hover{background:var(--gold)}
+
+/* ─── DETAIL DRAWER ─── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;display:none;backdrop-filter:blur(4px)}
+.drawer-overlay.show{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;background:var(--ink2);border-left:1px solid var(--line);z-index:801;overflow-y:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.drawer.show{transform:none}
+.drawer-hd{padding:24px 28px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--ink2);z-index:2}
+.drawer-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--white);font-weight:400}
+.drawer-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.drawer-close{color:var(--muted);font-size:18px;transition:color .3s}
+.drawer-close:hover{color:var(--gold)}
+.drawer-body{padding:24px 28px}
+.dr-section{margin-bottom:24px}
+.dr-section-title{font-size:10px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dr-section-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.dr-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.dr-field label{font-size:10px;letter-spacing:.2em;color:var(--muted);margin-bottom:5px;display:block}
+.dr-field span{font-size:13px;color:var(--text)}
+.pts-adjust{background:var(--ink3);border:1px solid var(--line);padding:20px;margin-top:12px}
+.pts-adj-row{display:grid;grid-template-columns:80px 1fr;gap:10px;align-items:end;margin-bottom:10px}
+
+/* ─── TIMELINE in drawer ─── */
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-dot.plus{background:var(--gold)}
+.tl-dot.minus{background:var(--red)}
+.tl-date{font-size:11px;color:var(--muted);width:76px;flex-shrink:0}
+.tl-desc{flex:1;font-size:12px;color:var(--text)}
+.tl-note{font-size:11px;color:var(--muted);margin-top:1px}
+.tl-amt{font-family:'Cormorant Garamond',serif;font-size:17px;text-align:right;flex-shrink:0}
+.tl-amt.plus{color:var(--gold)}
+.tl-amt.minus{color:var(--red)}
+.tl-bal{font-size:10px;color:var(--muted);text-align:right}
+
+/* ─── AFFILIATE REVIEW ─── */
+.review-card{background:var(--ink2);border:1px solid var(--line);padding:24px 28px;margin-bottom:1px;transition:background .25s}
+.review-card:hover{background:var(--ink3)}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.rc-name{font-size:16px;color:var(--white);margin-bottom:3px}
+.rc-email{font-size:12px;color:var(--muted)}
+.rc-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.rc-field label{font-size:10px;letter-spacing:.2em;color:var(--muted);margin-bottom:4px;display:block}
+.rc-field span{font-size:13px;color:var(--text)}
+.rc-actions{display:flex;gap:10px;align-items:center}
+.rc-reject-input{flex:1;padding:8px 12px;background:var(--ink3);border:1px solid rgba(255,255,255,.07);color:var(--text);font-size:12px;outline:none;display:none}
+.rc-reject-input.show{display:block}
+
+/* ─── MATERIALS MANAGER ─── */
+.mat-mgr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);margin-top:20px}
+.mat-mgr-card{background:var(--ink2);padding:24px}
+.mmc-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.mmc-name{font-size:15px;color:var(--white);margin-bottom:3px}
+.mmc-type{font-size:11px;color:var(--muted)}
+.mmc-url{font-size:12px;color:var(--gold);word-break:break-all;margin-bottom:12px;padding:8px;background:var(--ink3);border:1px solid var(--line)}
+.mmc-edit-form{display:none;margin-top:12px}
+.mmc-edit-form.show{display:block}
+.add-mat-form{background:var(--ink2);border:1px dashed rgba(184,150,90,.2);padding:24px;margin-top:1px}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+.overlay.show{display:flex}
+.modal{background:var(--ink2);border:1px solid var(--line);width:92%;max-width:440px;animation:mIn .3s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-hd{padding:22px 28px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--white)}
+.modal-close{color:var(--muted);font-size:17px;transition:color .3s}
+.modal-close:hover{color:var(--gold)}
+.modal-body{padding:22px 28px}
+.modal-footer{padding:14px 28px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+
+/* toast */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink3);border:1px solid var(--gold-dk);color:var(--gold-lt);padding:11px 22px;font-size:12px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;letter-spacing:.05em}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* divider */
+.sep{height:1px;background:var(--line);margin:20px 0}
+
+/* ── ADMIN MOBILE TAB BAR ── */
+.admin-tab-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink2);border-top:1px solid var(--line);z-index:800;padding-bottom:env(safe-area-inset-bottom)}
+.atb-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;transition:color .25s;color:var(--muted);background:none;border:none;font-family:'Noto Sans TC',sans-serif;position:relative}
+.atb-item.active{color:var(--gold)}
+.atb-ico{font-size:18px;line-height:1}
+.atb-lbl{font-size:9px;letter-spacing:.05em}
+.atb-badge{position:absolute;top:6px;right:calc(50% - 14px);background:var(--amber);color:var(--ink);font-size:8px;padding:1px 5px;border-radius:10px;font-weight:600;min-width:14px;text-align:center}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .admin-main .page{padding:24px 28px}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .drawer{width:380px}
+}
+
+@media(max-width:768px){
+  /* login */
+  .login-box{padding:36px 28px;margin:16px}
+
+  /* layout: hide sidebar, show tab bar */
+  .admin-layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .admin-tab-bar{display:flex}
+  #toast{bottom:72px}
+
+  /* pages */
+  .admin-main{height:calc(100vh - 0px);padding-bottom:60px}
+  .admin-main .page{padding:20px 16px 80px}
+  .page-title{font-size:22px;margin-bottom:2px}
+  .page-sub{font-size:11px;margin-bottom:18px}
+
+  /* stat cards */
+  .stat-row{grid-template-columns:1fr 1fr;gap:1px}
+  .sc-num{font-size:32px}
+  .stat-card{padding:18px 16px}
+
+  /* table */
+  .table-toolbar{flex-direction:column;align-items:stretch;gap:8px}
+  .search-input{max-width:100%}
+  table thead th:nth-child(3),
+  table thead th:nth-child(5),
+  table thead th:nth-child(6),
+  table tbody td:nth-child(3),
+  table tbody td:nth-child(5),
+  table tbody td:nth-child(6){display:none}
+  td,th{padding:10px 10px}
+
+  /* drawer */
+  .drawer{width:100%;border-left:none;border-top:1px solid var(--line);top:auto;height:85vh;border-radius:0}
+  .drawer-overlay.show~.drawer{transform:translateY(0)}
+  .drawer{transform:translateY(100%)}
+
+  /* review cards */
+  .rc-fields{grid-template-columns:1fr 1fr}
+  .rc-actions{flex-wrap:wrap}
+
+  /* materials */
+  .mat-mgr-grid{grid-template-columns:1fr}
+  .add-mat-form{padding:16px}
+  .add-mat-form>div[style*="grid"]{grid-template-columns:1fr!important}
+
+  /* modal */
+  .modal{width:96%}
+  .modal-hd,.modal-body,.modal-footer{padding:16px 18px}
+}
+
+@media(max-width:480px){
+  .stat-row{grid-template-columns:1fr}
+  .rc-fields{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">JNC</div>
+    <div class="login-sub">ADMIN PORTAL — 管理後台</div>
+    <div class="login-err" id="login-err">帳號或密碼錯誤，請重試。</div>
+    <div class="f-group"><label class="f-label">管理者帳號</label><input class="f-input" id="a-email" type="email" placeholder="admin@jnc.jp" value="admin@jnc.jp"></div>
+    <div class="f-group"><label class="f-label">密碼</label><input class="f-input" id="a-pw" type="password" placeholder="••••••••" value="Sakura@Admin2024"></div>
+    <button class="f-btn-full" onclick="adminLogin()">進入管理後台</button>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN SHELL ═══════════ -->
+<div id="admin-shell">
+
+<!-- MOBILE TAB BAR -->
+<div class="admin-tab-bar" id="admin-tab-bar">
+  <button class="atb-item active" onclick="goPageMob('overview',this)"><span class="atb-ico">▦</span><span class="atb-lbl">總覽</span></button>
+  <button class="atb-item" onclick="goPageMob('members',this)"><span class="atb-ico">👤</span><span class="atb-lbl">會員</span></button>
+  <button class="atb-item" onclick="goPageMob('review',this)"><span class="atb-ico">🔍</span><span class="atb-lbl">審核</span><span class="atb-badge" id="mob-badge-review">2</span></button>
+  <button class="atb-item" onclick="goPageMob('materials',this)"><span class="atb-ico">📦</span><span class="atb-lbl">素材</span></button>
+  <button class="atb-item" onclick="adminLogout()"><span class="atb-ico">↩</span><span class="atb-lbl">登出</span></button>
+</div>
+
+<div class="admin-layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sb-logo">JNC</div>
+    <div class="sb-sub">ADMIN PORTAL</div>
+  </div>
+  <div class="sb-admin">
+    <div class="sb-admin-dot"></div>
+    <div><div class="sb-admin-name">Administrator</div><div class="sb-admin-role">SUPER ADMIN</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">主要功能</div>
+    <div class="sb-item active" onclick="goPage('overview')"><span class="sb-ico">▦</span>數據總覽</div>
+    <div class="sb-section">會員管理</div>
+    <div class="sb-item" onclick="goPage('members')"><span class="sb-ico">👤</span>所有會員</div>
+    <div class="sb-item" onclick="goPage('review')"><span class="sb-ico">🔍</span>推廣者審核 <span class="sb-badge" id="badge-review">2</span></div>
+    <div class="sb-section">內容管理</div>
+    <div class="sb-item" onclick="goPage('materials')"><span class="sb-ico">📦</span>素材管理</div>
+  </nav>
+  <div class="sb-bottom">
+    <button class="sb-logout" onclick="adminLogout()">
+      <span>↩</span> 登出後台
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="admin-main">
+
+  <!-- ── OVERVIEW ── -->
+  <div class="page show" id="page-overview">
+    <div class="page-title">數據<em>總覽</em></div>
+    <div class="page-sub">Japan Night Concierge — 後台管理系統</div>
+    <div class="stat-row">
+      <div class="stat-card" data-ico="👤"><div class="sc-label">會員總數</div><div class="sc-num" id="ov-total">4</div><div class="sc-change">↑ 今日新增 1</div></div>
+      <div class="stat-card" data-ico="⏳"><div class="sc-label">待審核申請</div><div class="sc-num" id="ov-pending" style="color:var(--amber)">2</div><div class="sc-change" style="color:var(--amber)">需要處理</div></div>
+      <div class="stat-card" data-ico="✦"><div class="sc-label">積分發放總量</div><div class="sc-num" id="ov-pts">2,900</div><div class="sc-change">本月 + 1,400</div></div>
+      <div class="stat-card" data-ico="🌸"><div class="sc-label">推廣者（通過）</div><div class="sc-num" id="ov-affs" style="color:var(--green)">1</div><div class="sc-change" style="color:var(--green)">1 待審核</div></div>
+    </div>
+
+    <!-- recent members -->
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">最近加入會員</div>
+      <button class="btn-sm btn-outline-gold" onclick="goPage('members')">查看全部</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>姓名</th><th>Email</th><th>身份</th><th>積分</th><th>加入日期</th><th></th></tr></thead>
+        <tbody id="recent-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- pending quick list -->
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">待審核推廣者申請</div>
+      <button class="btn-sm btn-outline-gold" onclick="goPage('review')">前往審核</button>
+    </div>
+    <div id="quick-pending"></div>
+  </div>
+
+  <!-- ── MEMBERS ── -->
+  <div class="page" id="page-members">
+    <div class="page-title">所有<em>會員</em></div>
+    <div class="page-sub">點選會員列可查看詳細資料與積分操作</div>
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input class="search-input" placeholder="搜尋姓名或 Email…" oninput="filterMembers(this.value)">
+        <select class="filter-select" onchange="filterByRole(this.value)">
+          <option value="">全部身份</option>
+          <option value="member">一般會員</option>
+          <option value="affiliate_pending">推廣者（審核中）</option>
+          <option value="affiliate_approved">推廣者（通過）</option>
+          <option value="suspended">停權</option>
+        </select>
+      </div>
+      <table>
+        <thead><tr><th>姓名</th><th>Email</th><th>身份</th><th>積分</th><th>LINE</th><th>加入日期</th><th>操作</th></tr></thead>
+        <tbody id="members-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── REVIEW ── -->
+  <div class="page" id="page-review">
+    <div class="page-title">推廣者<em>審核</em></div>
+    <div class="page-sub">審核推廣者申請，通過後對方可查看素材庫</div>
+    <div id="review-list"></div>
+    <div id="review-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px">目前沒有待審核的申請</div>
+  </div>
+
+  <!-- ── MATERIALS ── -->
+  <div class="page" id="page-materials">
+    <div class="page-title">推廣素材<em>管理</em></div>
+    <div class="page-sub">管理推廣者可見的應用工具與連結</div>
+    <div class="mat-mgr-grid" id="mat-mgr-grid"></div>
+    <div class="add-mat-form">
+      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px">＋ 新增素材連結</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div><label class="f-label">素材名稱</label><input class="f-input" id="new-mat-name" type="text" placeholder="如：心理測驗 APP"></div>
+        <div><label class="f-label">類型</label>
+          <select class="f-select" id="new-mat-type">
+            <option>心理測驗</option><option>文章素材</option><option>落地頁</option><option>影片</option><option>其他</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:12px"><label class="f-label">連結 URL</label><input class="f-input" id="new-mat-url" type="url" placeholder="https://..."></div>
+      <div style="margin-bottom:12px"><label class="f-label">說明</label><textarea class="f-textarea" id="new-mat-desc" style="min-height:60px"></textarea></div>
+      <button class="btn-sm btn-solid-gold" onclick="addMaterial()">新增素材</button>
+    </div>
+  </div>
+
+</main>
+</div>
+</div><!-- /#admin-shell -->
+
+<!-- ── MEMBER DRAWER ── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="member-drawer">
+  <div class="drawer-hd">
+    <div><div class="drawer-title" id="dr-name">—</div><div class="drawer-sub" id="dr-email">—</div></div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- ── CONFIRM MODAL ── -->
+<div class="overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="confirm-title">確認操作</div><button class="modal-close" onclick="closeConfirm()">✕</button></div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--text);line-height:1.8" id="confirm-msg"></p></div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-outline-gold" onclick="closeConfirm()">取消</button>
+      <button class="btn-sm btn-solid-gold" id="confirm-ok">確認</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  MOCK DATA  (mirrors portal)
+// ══════════════════════════════════════════
+const USERS = {
+  'member@jnc.jp':{name:'山田 健一',role:'member',points:500,line:'@yamada_k',joined:'2024-11-20',
+    history:[
+      {date:'2024-12-01',desc:'諮詢費儲值',note:'管理者手動',type:'plus',amt:500,bal:500},
+      {date:'2024-11-20',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:0},
+    ]},
+  'promo1@jnc.jp':{name:'陳小明',role:'affiliate_pending',points:200,line:'@chenxm',joined:'2024-12-03',
+    affApp:{channel:'Instagram / Facebook',volume:'6–15',date:'2024-12-03'},
+    history:[{date:'2024-11-25',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:200}]},
+  'promo2@jnc.jp':{name:'Kim Jiyeon',role:'affiliate_approved',points:1800,line:'@kimjy',joined:'2024-11-18',
+    affApp:{channel:'YouTube / TikTok',volume:'16–30',date:'2024-11-18'},
+    history:[
+      {date:'2024-12-05',desc:'推廣佣金 — 3名客戶',note:'管理者核發',type:'plus',amt:1200,bal:1800},
+      {date:'2024-11-28',desc:'諮詢費儲值',note:'管理者手動',type:'plus',amt:500,bal:600},
+      {date:'2024-11-22',desc:'積分兌換折抵',note:'兌換申請',type:'minus',amt:100,bal:200},
+      {date:'2024-11-20',desc:'歡迎積分',note:'系統自動',type:'plus',amt:200,bal:100},
+    ]},
+};
+
+const MATERIALS = [
+  {id:1,name:'心理測驗：適合風俗指數',type:'心理測驗',url:'https://example.com/quiz',desc:'讓潛在客戶透過趣味測驗了解自己，提升轉換率的最佳導流工具。',status:'active'},
+  {id:2,name:'日本夜間文化指南',type:'文章素材',url:'',desc:'專業圖文指南素材，即將提供給推廣者使用。',status:'coming'},
+  {id:3,name:'城市專屬落地頁 — 東京',type:'落地頁',url:'',desc:'東京專屬推廣落地頁，即將上線。',status:'coming'},
+];
+
+let filterTerm = '';
+let filterRole = '';
+let currentDrawerEmail = null;
+
+// ══════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════
+function adminLogin(){
+  const e = document.getElementById('a-email').value.trim();
+  const p = document.getElementById('a-pw').value;
+  if(e==='admin@jnc.jp' && p==='Sakura@Admin2024'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-shell').style.display='block';
+    initAdmin();
+  } else {
+    document.getElementById('login-err').classList.add('show');
+  }
+}
+document.getElementById('a-pw').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
+
+function adminLogout(){
+  document.getElementById('admin-shell').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+function initAdmin(){
+  renderOverview();
+  renderMembers();
+  renderReview();
+  renderMaterials();
+}
+
+// ══════════════════════════════════════════
+//  PAGE NAV
+// ══════════════════════════════════════════
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-'+id).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+//  OVERVIEW
+// ══════════════════════════════════════════
+function renderOverview(){
+  const emails = Object.keys(USERS);
+  document.getElementById('ov-total').textContent = emails.length;
+  const pending = emails.filter(e=>USERS[e].role==='affiliate_pending').length;
+  document.getElementById('ov-pending').textContent = pending;
+  document.getElementById('badge-review').textContent = pending;
+  const totalPts = emails.reduce((s,e)=>{
+    return s + (USERS[e].history||[]).filter(h=>h.type==='plus').reduce((a,h)=>a+h.amt,0);
+  },0);
+  document.getElementById('ov-pts').textContent = totalPts.toLocaleString();
+  document.getElementById('ov-affs').textContent = emails.filter(e=>USERS[e].role==='affiliate_approved').length;
+
+  // recent table
+  const tbody = document.getElementById('recent-tbody');
+  tbody.innerHTML = emails.slice(0,4).map(email=>{
+    const u = USERS[email];
+    return `<tr onclick="openDrawer('${email}')">
+      <td class="td-name">${u.name}</td>
+      <td class="td-email">${email}</td>
+      <td>${roleBadge(u.role)}</td>
+      <td class="td-pts">${u.points.toLocaleString()}</td>
+      <td>${u.joined||'—'}</td>
+      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">查看</button></td>
+    </tr>`;
+  }).join('');
+
+  // quick pending
+  const pendingEmails = emails.filter(e=>USERS[e].role==='affiliate_pending');
+  const qp = document.getElementById('quick-pending');
+  if(!pendingEmails.length){
+    qp.innerHTML=`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">目前無待審核申請</div>`;
+  } else {
+    qp.innerHTML = pendingEmails.map(email=>{
+      const u = USERS[email];
+      return `<div class="review-card">
+        <div class="rc-top"><div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>${roleBadge(u.role)}</div>
+        <div class="rc-actions">
+          <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">✓ 通過</button>
+          <button class="btn-sm btn-outline-red" onclick="goPage('review')">前往審核頁面</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════════
+//  MEMBERS TABLE
+// ══════════════════════════════════════════
+function renderMembers(){
+  const tbody = document.getElementById('members-tbody');
+  const emails = Object.keys(USERS).filter(e=>{
+    const u = USERS[e];
+    const matchTerm = !filterTerm || u.name.toLowerCase().includes(filterTerm.toLowerCase()) || e.toLowerCase().includes(filterTerm.toLowerCase());
+    const matchRole = !filterRole || u.role===filterRole;
+    return matchTerm && matchRole;
+  });
+  if(!emails.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">沒有符合的會員</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = emails.map(email=>{
+    const u = USERS[email];
+    return `<tr onclick="openDrawer('${email}')">
+      <td class="td-name">${u.name}</td>
+      <td class="td-email">${email}</td>
+      <td>${roleBadge(u.role)}</td>
+      <td class="td-pts">${u.points.toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--muted)">${u.line||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${u.joined||'—'}</td>
+      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">詳情</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterMembers(v){filterTerm=v;renderMembers()}
+function filterByRole(v){filterRole=v;renderMembers()}
+
+// ══════════════════════════════════════════
+//  MEMBER DRAWER
+// ══════════════════════════════════════════
+function openDrawer(email){
+  currentDrawerEmail = email;
+  const u = USERS[email];
+  document.getElementById('dr-name').textContent = u.name;
+  document.getElementById('dr-email').textContent = email;
+
+  const tlHtml = (u.history||[]).map(h=>`
+    <div class="tl-item">
+      <div class="tl-dot ${h.type}"></div>
+      <div class="tl-date">${h.date}</div>
+      <div><div class="tl-desc">${h.desc}</div><div class="tl-note">${h.note||''}</div></div>
+      <div><div class="tl-amt ${h.type}">${h.type==='plus'?'+':'−'}${h.amt}</div><div class="tl-bal">餘 ${h.bal}</div></div>
+    </div>`).join('') || '<div style="font-size:13px;color:var(--muted);padding:12px 0">暫無紀錄</div>';
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="dr-section">
+      <div class="dr-section-title">基本資料</div>
+      <div class="dr-row">
+        <div class="dr-field"><label>姓名</label><span>${u.name}</span></div>
+        <div class="dr-field"><label>Email</label><span style="font-size:11px">${email}</span></div>
+        <div class="dr-field"><label>LINE</label><span>${u.line||'—'}</span></div>
+        <div class="dr-field"><label>加入日期</label><span>${u.joined||'—'}</span></div>
+      </div>
+      <div class="dr-field"><label>目前身份</label><div style="margin-top:6px">${roleBadge(u.role)}</div></div>
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-section-title">身份權限修改</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','member')">設為一般會員</button>
+        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','affiliate_approved')">設為推廣者（通過）</button>
+        <button class="btn-sm btn-outline-red"  onclick="setRole('${email}','suspended')">停權</button>
+      </div>
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-section-title">積分管理</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:28px;font-family:'Cormorant Garamond',serif;color:var(--gold)">${u.points.toLocaleString()}</span>
+        <span style="font-size:12px;color:var(--muted)">目前積分</span>
+      </div>
+      <div class="pts-adjust">
+        <div class="pts-adj-row">
+          <div>
+            <label class="f-label">操作</label>
+            <select class="f-select" id="dr-pts-type" style="padding:8px">
+              <option value="plus">＋ 新增</option>
+              <option value="minus">－ 扣除</option>
+            </select>
+          </div>
+          <div>
+            <label class="f-label">點數</label>
+            <input class="f-input" id="dr-pts-amt" type="number" min="1" placeholder="500" style="padding:8px">
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label class="f-label">備註說明</label>
+          <input class="f-input" id="dr-pts-note" type="text" placeholder="如：諮詢費儲值" style="padding:8px">
+        </div>
+        <button class="btn-sm btn-solid-gold" onclick="adjustPoints('${email}')">執行積分操作</button>
+      </div>
+    </div>
+
+    <div class="dr-section">
+      <div class="dr-section-title">積分明細</div>
+      ${tlHtml}
+    </div>`;
+
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('member-drawer').classList.add('show');
+}
+
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('member-drawer').classList.remove('show');
+}
+
+function adjustPoints(email){
+  const type  = document.getElementById('dr-pts-type').value;
+  const amt   = parseInt(document.getElementById('dr-pts-amt').value)||0;
+  const note  = document.getElementById('dr-pts-note').value||'管理者操作';
+  if(!amt){toast('請輸入點數');return;}
+  const u = USERS[email];
+  if(type==='minus' && amt > u.points){toast('扣除點數不能超過現有積分');return;}
+  const newBal = type==='plus' ? u.points+amt : u.points-amt;
+  u.points = newBal;
+  u.history.unshift({date:today(),desc:note,note:'管理者手動',type,amt,bal:newBal});
+  toast(`✅ 已${type==='plus'?'新增':'扣除'} ${amt} 點，餘額 ${newBal}`);
+  renderOverview();
+  renderMembers();
+  openDrawer(email); // refresh
+}
+
+function setRole(email, role){
+  confirm2(`確定要將 ${USERS[email].name} 的身份改為「${roleLabel(role)}」嗎？`, ()=>{
+    USERS[email].role = role;
+    toast(`✅ 身份已更新為：${roleLabel(role)}`);
+    renderOverview();
+    renderMembers();
+    renderReview();
+    openDrawer(email);
+  });
+}
+
+// ══════════════════════════════════════════
+//  AFFILIATE REVIEW
+// ══════════════════════════════════════════
+function renderReview(){
+  const emails = Object.keys(USERS).filter(e=>USERS[e].role==='affiliate_pending');
+  const list = document.getElementById('review-list');
+  const empty = document.getElementById('review-empty');
+  const badge = document.getElementById('badge-review');
+  badge.textContent = emails.length;
+
+  if(!emails.length){
+    list.innerHTML='';empty.style.display='block';return;
+  }
+  empty.style.display='none';
+  list.innerHTML = emails.map(email=>{
+    const u = USERS[email];
+    const app = u.affApp||{};
+    return `<div class="review-card" id="rc-${email.replace('@','_').replace('.','_')}">
+      <div class="rc-top">
+        <div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>
+        ${roleBadge(u.role)}
+      </div>
+      <div class="rc-fields">
+        <div class="rc-field"><label>申請日期</label><span>${app.date||u.joined||'—'}</span></div>
+        <div class="rc-field"><label>推廣管道</label><span>${app.channel||'—'}</span></div>
+        <div class="rc-field"><label>預計推薦量</label><span>${app.volume||'—'} 人/月</span></div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">✓ 通過審核</button>
+        <input class="f-input rc-reject-input" id="reject-reason-${email.replace(/[@.]/g,'_')}" placeholder="填寫拒絕原因（選填）">
+        <button class="btn-sm btn-outline-red" onclick="toggleRejectInput('${email}')">✕ 拒絕</button>
+        <button class="btn-sm btn-outline-gold" style="display:none" id="reject-confirm-${email.replace(/[@.]/g,'_')}" onclick="rejectAffiliate('${email}')">確認拒絕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function approveAffiliate(email){
+  confirm2(`確定通過 ${USERS[email].name} 的推廣者申請？`, ()=>{
+    USERS[email].role = 'affiliate_approved';
+    toast(`✅ 已通過 ${USERS[email].name} 的申請`);
+    renderOverview();renderMembers();renderReview();
+  });
+}
+
+function toggleRejectInput(email){
+  const key = email.replace(/[@.]/g,'_');
+  const inp = document.getElementById('reject-reason-'+key);
+  const btn = document.getElementById('reject-confirm-'+key);
+  inp.classList.toggle('show');
+  btn.style.display = btn.style.display==='none' ? '' : 'none';
+}
+
+function rejectAffiliate(email){
+  const key = email.replace(/[@.]/g,'_');
+  const reason = document.getElementById('reject-reason-'+key).value||'不符合申請資格';
+  confirm2(`確定拒絕 ${USERS[email].name} 的申請？原因：${reason}`, ()=>{
+    delete USERS[email]; // remove demo; real impl would just set role
+    toast(`已拒絕申請並通知對方`);
+    renderOverview();renderMembers();renderReview();
+  });
+}
+
+// ══════════════════════════════════════════
+//  MATERIALS
+// ══════════════════════════════════════════
+function renderMaterials(){
+  const grid = document.getElementById('mat-mgr-grid');
+  grid.innerHTML = MATERIALS.map(m=>`
+    <div class="mat-mgr-card">
+      <div class="mmc-hd">
+        <div><div class="mmc-name">${m.name}</div><div class="mmc-type">${m.type}</div></div>
+        <span class="badge ${m.status==='active'?'badge-approved':'badge-pending'}">${m.status==='active'?'已上線':'即將推出'}</span>
+      </div>
+      <div class="mmc-url">${m.url||'（尚未設定連結）'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${m.desc}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm btn-outline-gold" onclick="toggleEdit(${m.id})">編輯連結</button>
+        <button class="btn-sm btn-outline-red" onclick="deleteMat(${m.id})">刪除</button>
+      </div>
+      <div class="mmc-edit-form" id="edit-${m.id}">
+        <div class="f-group" style="margin-top:12px"><label class="f-label">更新連結</label><input class="f-input" id="edit-url-${m.id}" type="url" value="${m.url}" placeholder="https://..."></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm btn-solid-gold" onclick="saveMatUrl(${m.id})">儲存</button>
+          <button class="btn-sm btn-outline-gold" onclick="toggleEdit(${m.id})">取消</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleEdit(id){
+  document.getElementById('edit-'+id).classList.toggle('show');
+}
+function saveMatUrl(id){
+  const m = MATERIALS.find(x=>x.id===id);
+  const val = document.getElementById('edit-url-'+id).value.trim();
+  m.url = val;
+  m.status = val ? 'active' : 'coming';
+  toast('✅ 連結已更新');
+  renderMaterials();
+}
+function deleteMat(id){
+  confirm2('確定要刪除此素材項目嗎？', ()=>{
+    const i = MATERIALS.findIndex(x=>x.id===id);
+    if(i>-1) MATERIALS.splice(i,1);
+    toast('已刪除素材');
+    renderMaterials();
+  });
+}
+function addMaterial(){
+  const name = document.getElementById('new-mat-name').value.trim();
+  const type = document.getElementById('new-mat-type').value;
+  const url  = document.getElementById('new-mat-url').value.trim();
+  const desc = document.getElementById('new-mat-desc').value.trim();
+  if(!name){toast('請輸入素材名稱');return;}
+  const id = Date.now();
+  MATERIALS.push({id,name,type,url,desc,status:url?'active':'coming'});
+  document.getElementById('new-mat-name').value='';
+  document.getElementById('new-mat-url').value='';
+  document.getElementById('new-mat-desc').value='';
+  toast('✅ 已新增素材');
+  renderMaterials();
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function roleBadge(role){
+  const map={
+    member:`<span class="badge badge-member"><span class="badge-dot"></span>一般會員</span>`,
+    affiliate_pending:`<span class="badge badge-pending"><span class="badge-dot"></span>推廣者審核中</span>`,
+    affiliate_approved:`<span class="badge badge-approved"><span class="badge-dot"></span>推廣者已通過</span>`,
+    suspended:`<span class="badge badge-suspended"><span class="badge-dot"></span>已停權</span>`,
+  };
+  return map[role]||`<span class="badge badge-member">${role}</span>`;
+}
+function roleLabel(r){
+  return {member:'一般會員',affiliate_pending:'推廣者（審核中）',affiliate_approved:'推廣者（已通過）',suspended:'停權'}[r]||r;
+}
+
+let _confirmCb = null;
+function confirm2(msg, cb){
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok').onclick = ()=>{cb();closeConfirm()};
+  document.getElementById('confirm-modal').classList.add('show');
+  _confirmCb = cb;
+}
+function closeConfirm(){document.getElementById('confirm-modal').classList.remove('show')}
+document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeConfirm()});
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function today(){return new Date().toISOString().slice(0,10)}
+
+// ══════════════════════════════════════════
+//  MOBILE PAGE NAVIGATION (Tab Bar)
+// ══════════════════════════════════════════
+function goPageMob(id, el){
+  // reuse desktop goPage but without event dependency
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-'+id).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  // update tab bar
+  document.querySelectorAll('.atb-item').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+// override goPage to also sync tab bar
+const _origGoPage = goPage;
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-'+id).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(event && event.currentTarget) event.currentTarget.classList.add('active');
+  // sync tab bar
+  const pageTabMap = {overview:0,members:1,review:2,materials:3};
+  const idx = pageTabMap[id];
+  const tabs = document.querySelectorAll('.atb-item');
+  tabs.forEach(b=>b.classList.remove('active'));
+  if(idx!==undefined && tabs[idx]) tabs[idx].classList.add('active');
+  // sync review badge
+  syncReviewBadge();
+}
+
+function syncReviewBadge(){
+  const cnt = Object.values(USERS).filter(u=>u.role==='affiliate_pending').length;
+  const b1 = document.getElementById('badge-review');
+  const b2 = document.getElementById('mob-badge-review');
+  if(b1) b1.textContent = cnt;
+  if(b2) b2.textContent = cnt;
+  if(b2) b2.style.display = cnt ? '' : 'none';
+}
+
+// ══════════════════════════════════════════
+//  PWA
+// ══════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js')
+      .then(()=>console.log('[JNC Admin] SW registered'))
+      .catch(err=>console.warn('[JNC Admin] SW error', err));
+  }
+});
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+syncReviewBadge();
+</script>
+</body>
+</html>
