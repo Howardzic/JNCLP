@@ -184,6 +184,23 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 .mmc-edit-form.show{display:block}
 .add-mat-form{background:var(--ink2);border:1px dashed rgba(184,150,90,.2);padding:24px;margin-top:1px}
 
+/* ─── PERFORMANCE ─── */
+.perf-aff-card{background:var(--ink2);border:1px solid var(--line);padding:24px 28px;margin-bottom:1px}
+.perf-aff-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.perf-aff-name{font-size:16px;color:var(--white);margin-bottom:3px}
+.perf-aff-email{font-size:12px;color:var(--muted)}
+.perf-code-badge{font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:.15em;color:var(--gold-lt);background:var(--ink4);border:1px solid var(--gold-dk);padding:4px 14px}
+.perf-aff-link{font-size:11px;color:var(--gold);word-break:break-all;padding:8px 12px;background:var(--ink3);border:1px solid var(--line);margin-bottom:14px;cursor:pointer;transition:border-color .3s}
+.perf-aff-link:hover{border-color:var(--gold-dk)}
+.perf-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-bottom:16px}
+.perf-stat-box{background:var(--ink3);padding:14px 18px}
+.psb-n{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--white);line-height:1}
+.psb-l{font-size:10px;letter-spacing:.2em;color:var(--muted);margin-top:4px}
+.perf-ref-list{border-top:1px solid var(--line);padding-top:14px}
+.ref-list-hd{font-size:10px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.perf-ref-item{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px;color:var(--text)}
+.perf-ref-item:last-child{border-bottom:none}
+
 /* ─── MODAL ─── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
 .overlay.show{display:flex}
@@ -321,6 +338,7 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
     <div class="sb-item" onclick="goPage('review')"><span class="sb-ico">🔍</span>推廣者審核 <span class="sb-badge" id="badge-review">2</span></div>
     <div class="sb-section">內容管理</div>
     <div class="sb-item" onclick="goPage('materials')"><span class="sb-ico">📦</span>素材管理</div>
+    <div class="sb-item" onclick="goPage('perf')"><span class="sb-ico">📊</span>推廣績效</div>
   </nav>
   <div class="sb-bottom">
     <button class="sb-logout" onclick="adminLogout()">
@@ -415,6 +433,14 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
       <div style="margin-bottom:12px"><label class="f-label">說明</label><textarea class="f-textarea" id="new-mat-desc" style="min-height:60px"></textarea></div>
       <button class="btn-sm btn-solid-gold" onclick="addMaterial()">新增素材</button>
     </div>
+  </div>
+
+  <!-- ── PERFORMANCE ── -->
+  <div class="page" id="page-perf">
+    <div class="page-title">推廣<em>績效</em></div>
+    <div class="page-sub">各推廣者邀請碼使用量與實際推薦人數追蹤</div>
+    <div id="perf-list"></div>
+    <div id="perf-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px">目前沒有已通過的推廣者</div>
   </div>
 
 </main>
@@ -514,6 +540,7 @@ function initAdmin() {
     renderOverview();
     renderMembers();
     renderReview();
+    renderPerf();
     syncReviewBadge();
     if (currentDrawerEmail && USERS[currentDrawerEmail]) openDrawer(currentDrawerEmail);
   });
@@ -750,10 +777,21 @@ function renderReview() {
   }).join('');
 }
 
+function genAffCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const code = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return 'JNC-' + code;
+}
+
 async function approveAffiliate(email) {
   confirm2(`確定通過 ${USERS[email].name} 的推廣者申請？`, async () => {
-    await db.collection('users').doc(email).update({ role: 'affiliate_approved' });
-    toast(`✅ 已通過 ${USERS[email].name} 的申請`);
+    // Generate unique affCode
+    let affCode;
+    const existingCodes = new Set(Object.values(USERS).map(u => u.affCode).filter(Boolean));
+    do { affCode = genAffCode(); } while (existingCodes.has(affCode));
+
+    await db.collection('users').doc(email).update({ role: 'affiliate_approved', affCode });
+    toast(`✅ 已通過 ${USERS[email].name} 的申請，邀請碼：${affCode}`);
   });
 }
 
@@ -780,6 +818,47 @@ async function rejectAffiliate(email) {
 // ══════════════════════════════════════════
 //  MATERIALS
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+//  PERFORMANCE
+// ══════════════════════════════════════════
+function renderPerf() {
+  const approvedEmails = Object.keys(USERS).filter(e => USERS[e].role === 'affiliate_approved');
+  const list  = document.getElementById('perf-list');
+  const empty = document.getElementById('perf-empty');
+  if (!list) return;
+  if (!approvedEmails.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const portalBase = 'https://howardzic.github.io/JNCLP/jnc-portal.html';
+  list.innerHTML = approvedEmails.map(email => {
+    const u = USERS[email];
+    const referrals = u.referrals || [];
+    const monthCount = referrals.filter(r => (r.date || '').startsWith(thisMonth)).length;
+    const affCode = u.affCode || '（尚未分配）';
+    const refLink = u.affCode ? `${portalBase}?ref=${u.affCode}` : '—';
+    return `<div class="perf-aff-card">
+      <div class="perf-aff-top">
+        <div><div class="perf-aff-name">${u.name}</div><div class="perf-aff-email">${email}</div></div>
+        <div class="perf-code-badge">${affCode}</div>
+      </div>
+      ${u.affCode ? `<div class="perf-aff-link" onclick="navigator.clipboard.writeText('${refLink}');toast('已複製推廣連結')" title="點擊複製推廣連結">🔗 ${refLink}</div>` : ''}
+      <div class="perf-stats-row">
+        <div class="perf-stat-box"><div class="psb-n">${referrals.length}</div><div class="psb-l">總推薦人數</div></div>
+        <div class="perf-stat-box"><div class="psb-n">${monthCount}</div><div class="psb-l">本月新增</div></div>
+        <div class="perf-stat-box"><div class="psb-n">${u.affApp?.channel || '—'}</div><div class="psb-l">推廣管道</div></div>
+      </div>
+      ${referrals.length ? `<div class="perf-ref-list">
+        <div class="ref-list-hd">推薦明細</div>
+        ${[...referrals].reverse().map(r => `
+          <div class="perf-ref-item">
+            <span>${r.name || '—'} <span style="color:var(--muted)">${r.email || ''}</span></span>
+            <span style="color:var(--muted)">${r.date || '—'}</span>
+          </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
 function renderMaterials() {
   document.getElementById('mat-mgr-grid').innerHTML = MATERIALS.map(m => `
     <div class="mat-mgr-card">
