@@ -300,6 +300,16 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
   .stat-row{grid-template-columns:1fr}
   .rc-fields{grid-template-columns:1fr}
 }
+
+/* ─── LANG SWITCHER ─── */
+.sb-lang-wrap{position:relative;padding:8px 24px}
+.sb-lang-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit;letter-spacing:.05em;transition:color .3s;padding:0}
+.sb-lang-btn:hover{color:var(--text)}
+.sb-lang-drop{position:absolute;bottom:calc(100% + 4px);left:24px;background:var(--ink3);border:1px solid var(--line);min-width:110px;display:none;z-index:100}
+.sb-lang-wrap.open .sb-lang-drop{display:block}
+.sb-lang-opt{display:block;width:100%;padding:9px 16px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;background:none;border:none;font-family:inherit;text-align:left}
+.sb-lang-opt:hover{color:var(--gold);background:rgba(184,150,90,.05)}
+.sb-lang-opt.active{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -308,11 +318,11 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">JNC</div>
-    <div class="login-sub">ADMIN PORTAL — 管理後台</div>
-    <div class="login-err" id="login-err">帳號或密碼錯誤，請重試。</div>
-    <div class="f-group"><label class="f-label">管理者帳號</label><input class="f-input" id="a-email" type="email" placeholder="admin@jnc.jp"></div>
-    <div class="f-group"><label class="f-label">密碼</label><input class="f-input" id="a-pw" type="password" placeholder="••••••••"></div>
-    <button class="f-btn-full" onclick="adminLogin()">進入管理後台</button>
+    <div class="login-sub" data-i18n="login_sub">ADMIN PORTAL — 管理後台</div>
+    <div class="login-err" id="login-err" data-i18n="login_err">帳號或密碼錯誤，請重試。</div>
+    <div class="f-group"><label class="f-label" data-i18n="login_label_email">管理者帳號</label><input class="f-input" id="a-email" type="email" placeholder="admin@jnc.jp"></div>
+    <div class="f-group"><label class="f-label" data-i18n="login_label_pw">密碼</label><input class="f-input" id="a-pw" type="password" placeholder="••••••••"></div>
+    <button class="f-btn-full" onclick="adminLogin()" data-i18n="login_btn">進入管理後台</button>
   </div>
 </div>
 
@@ -321,11 +331,11 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 
 <!-- MOBILE TAB BAR -->
 <div class="admin-tab-bar" id="admin-tab-bar">
-  <button class="atb-item active" onclick="goPageMob('overview',this)"><span class="atb-ico">▦</span><span class="atb-lbl">總覽</span></button>
-  <button class="atb-item" onclick="goPageMob('members',this)"><span class="atb-ico">👤</span><span class="atb-lbl">會員</span></button>
-  <button class="atb-item" onclick="goPageMob('review',this)"><span class="atb-ico">🔍</span><span class="atb-lbl">審核</span><span class="atb-badge" id="mob-badge-review">2</span></button>
-  <button class="atb-item" onclick="goPageMob('materials',this)"><span class="atb-ico">📦</span><span class="atb-lbl">素材</span></button>
-  <button class="atb-item" onclick="adminLogout()"><span class="atb-ico">↩</span><span class="atb-lbl">登出</span></button>
+  <button class="atb-item active" onclick="goPageMob('overview',this)"><span class="atb-ico">▦</span><span class="atb-lbl" data-i18n="tab_overview">總覽</span></button>
+  <button class="atb-item" onclick="goPageMob('members',this)"><span class="atb-ico">👤</span><span class="atb-lbl" data-i18n="tab_members">會員</span></button>
+  <button class="atb-item" onclick="goPageMob('review',this)"><span class="atb-ico">🔍</span><span class="atb-lbl" data-i18n="tab_review">審核</span><span class="atb-badge" id="mob-badge-review">2</span></button>
+  <button class="atb-item" onclick="goPageMob('materials',this)"><span class="atb-ico">📦</span><span class="atb-lbl" data-i18n="tab_materials">素材</span></button>
+  <button class="atb-item" onclick="adminLogout()"><span class="atb-ico">↩</span><span class="atb-lbl" data-i18n="tab_logout">登出</span></button>
 </div>
 
 <div class="admin-layout">
@@ -341,20 +351,29 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
     <div><div class="sb-admin-name">Administrator</div><div class="sb-admin-role">SUPER ADMIN</div></div>
   </div>
   <nav class="sb-nav">
-    <div class="sb-section">主要功能</div>
-    <div class="sb-item active" onclick="goPage('overview')"><span class="sb-ico">▦</span>數據總覽</div>
-    <div class="sb-section">會員管理</div>
-    <div class="sb-item" onclick="goPage('members')"><span class="sb-ico">👤</span>所有會員</div>
-    <div class="sb-item" onclick="goPage('review')"><span class="sb-ico">🔍</span>推廣者審核 <span class="sb-badge" id="badge-review">2</span></div>
-    <div class="sb-section">內容管理</div>
-    <div class="sb-item" onclick="goPage('redeem')"><span class="sb-ico">🎁</span>兌換管理</div>
-    <div class="sb-item" onclick="goPage('materials')"><span class="sb-ico">📦</span>素材管理</div>
-    <div class="sb-item" onclick="goPage('perf')"><span class="sb-ico">📊</span>推廣績效</div>
+    <div class="sb-section" data-i18n="sb_main">主要功能</div>
+    <div class="sb-item active" onclick="goPage('overview')"><span class="sb-ico">▦</span><span data-i18n="nav_overview">數據總覽</span></div>
+    <div class="sb-section" data-i18n="sb_member">會員管理</div>
+    <div class="sb-item" onclick="goPage('members')"><span class="sb-ico">👤</span><span data-i18n="nav_members">所有會員</span></div>
+    <div class="sb-item" onclick="goPage('review')"><span class="sb-ico">🔍</span><span data-i18n="nav_review">推廣者審核</span> <span class="sb-badge" id="badge-review">2</span></div>
+    <div class="sb-section" data-i18n="sb_content">內容管理</div>
+    <div class="sb-item" onclick="goPage('redeem')"><span class="sb-ico">🎁</span><span data-i18n="nav_redeem">兌換管理</span></div>
+    <div class="sb-item" onclick="goPage('materials')"><span class="sb-ico">📦</span><span data-i18n="nav_materials">素材管理</span></div>
+    <div class="sb-item" onclick="goPage('perf')"><span class="sb-ico">📊</span><span data-i18n="nav_perf">推廣績效</span></div>
   </nav>
   <div class="sb-bottom">
-    <button class="sb-logout" onclick="adminLogout()">
-      <span>↩</span> 登出後台
-    </button>
+    <div class="sb-lang-wrap" id="admin-lang-wrap">
+      <button class="sb-lang-btn" onclick="toggleAdminLang()">
+        <span id="admin-lang-current">中文</span>
+        <svg viewBox="0 0 10 6" fill="none" style="width:8px;height:8px;stroke:currentColor;stroke-width:1.2"><path d="M1 1l4 4 4-4"/></svg>
+      </button>
+      <div class="sb-lang-drop">
+        <button class="sb-lang-opt active" onclick="setAdminLang('zh','中文')">中文</button>
+        <button class="sb-lang-opt" onclick="setAdminLang('en','EN')">English</button>
+        <button class="sb-lang-opt" onclick="setAdminLang('ja','日本語')">日本語</button>
+      </div>
+    </div>
+    <button class="sb-logout" onclick="adminLogout()" data-i18n="nav_logout">登出後台</button>
   </div>
 </aside>
 
@@ -363,23 +382,23 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 
   <!-- ── OVERVIEW ── -->
   <div class="page show" id="page-overview">
-    <div class="page-title">數據<em>總覽</em></div>
-    <div class="page-sub">Japan Night Concierge — 後台管理系統</div>
+    <div class="page-title" data-i18n-html="ov_page_title">數據<em>總覽</em></div>
+    <div class="page-sub" data-i18n="ov_sub">Japan Night Concierge — 後台管理系統</div>
     <div class="stat-row">
-      <div class="stat-card" data-ico="👤"><div class="sc-label">會員總數</div><div class="sc-num" id="ov-total">4</div><div class="sc-change">↑ 今日新增 1</div></div>
-      <div class="stat-card" data-ico="⏳"><div class="sc-label">待審核申請</div><div class="sc-num" id="ov-pending" style="color:var(--amber)">2</div><div class="sc-change" style="color:var(--amber)">需要處理</div></div>
-      <div class="stat-card" data-ico="✦"><div class="sc-label">積分發放總量</div><div class="sc-num" id="ov-pts">2,900</div><div class="sc-change">本月 + 1,400</div></div>
-      <div class="stat-card" data-ico="🌸"><div class="sc-label">推廣者（通過）</div><div class="sc-num" id="ov-affs" style="color:var(--green)">1</div><div class="sc-change" style="color:var(--green)">1 待審核</div></div>
+      <div class="stat-card" data-ico="👤"><div class="sc-label" data-i18n="ov_stat_total">會員總數</div><div class="sc-num" id="ov-total">4</div><div class="sc-change">↑ 今日新增 1</div></div>
+      <div class="stat-card" data-ico="⏳"><div class="sc-label" data-i18n="ov_stat_pending">待審核申請</div><div class="sc-num" id="ov-pending" style="color:var(--amber)">2</div><div class="sc-change" style="color:var(--amber)">需要處理</div></div>
+      <div class="stat-card" data-ico="✦"><div class="sc-label" data-i18n="ov_stat_pts">積分發放總量</div><div class="sc-num" id="ov-pts">2,900</div><div class="sc-change">本月 + 1,400</div></div>
+      <div class="stat-card" data-ico="🌸"><div class="sc-label" data-i18n="ov_stat_affs">推廣者（通過）</div><div class="sc-num" id="ov-affs" style="color:var(--green)">1</div><div class="sc-change" style="color:var(--green)">1 待審核</div></div>
     </div>
 
     <!-- recent members -->
     <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">最近加入會員</div>
-      <button class="btn-sm btn-outline-gold" onclick="goPage('members')">查看全部</button>
+      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase" data-i18n="ov_recent">最近加入會員</div>
+      <button class="btn-sm btn-outline-gold" onclick="goPage('members')" data-i18n="ov_see_all">查看全部</button>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>姓名</th><th>Email</th><th>身份</th><th>積分</th><th>加入日期</th><th></th></tr></thead>
+        <thead><tr><th data-i18n="mem_col_name">姓名</th><th>Email</th><th data-i18n="mem_col_role">身份</th><th data-i18n="mem_col_pts">積分</th><th data-i18n="mem_col_joined">加入日期</th><th></th></tr></thead>
         <tbody id="recent-tbody"></tbody>
       </table>
     </div>
@@ -388,20 +407,20 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 
     <!-- pending quick list -->
     <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">待審核推廣者申請</div>
-      <button class="btn-sm btn-outline-gold" onclick="goPage('review')">前往審核</button>
+      <div style="font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase" data-i18n="ov_pending_hd">待審核推廣者申請</div>
+      <button class="btn-sm btn-outline-gold" onclick="goPage('review')" data-i18n="ov_go_review">前往審核</button>
     </div>
     <div id="quick-pending"></div>
   </div>
 
   <!-- ── MEMBERS ── -->
   <div class="page" id="page-members">
-    <div class="page-title">所有<em>會員</em></div>
-    <div class="page-sub">點選會員列可查看詳細資料與積分操作</div>
+    <div class="page-title" data-i18n-html="mem_page_title">所有<em>會員</em></div>
+    <div class="page-sub" data-i18n="mem_sub">點選會員列可查看詳細資料與積分操作</div>
     <div class="table-wrap">
       <div class="table-toolbar">
-        <input class="search-input" placeholder="搜尋姓名或 Email…" oninput="filterMembers(this.value)">
-        <select class="filter-select" onchange="filterByRole(this.value)">
+        <input class="search-input" placeholder="搜尋姓名或 Email…" data-i18n-ph="mem_search_ph" oninput="filterMembers(this.value)">
+        <select class="filter-select" id="role-filter" onchange="filterByRole(this.value)">
           <option value="">全部身份</option>
           <option value="member">一般會員</option>
           <option value="manager">次級管理員</option>
@@ -411,7 +430,7 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
         </select>
       </div>
       <table>
-        <thead><tr><th>姓名</th><th>Email</th><th>身份</th><th>積分</th><th>LINE</th><th>加入日期</th><th>操作</th></tr></thead>
+        <thead><tr><th data-i18n="mem_col_name">姓名</th><th>Email</th><th data-i18n="mem_col_role">身份</th><th data-i18n="mem_col_pts">積分</th><th>LINE</th><th data-i18n="mem_col_joined">加入日期</th><th data-i18n="mem_col_action">操作</th></tr></thead>
         <tbody id="members-tbody"></tbody>
       </table>
     </div>
@@ -419,55 +438,55 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 
   <!-- ── REVIEW ── -->
   <div class="page" id="page-review">
-    <div class="page-title">推廣者<em>審核</em></div>
-    <div class="page-sub">審核推廣者申請，通過後對方可查看素材庫</div>
+    <div class="page-title" data-i18n-html="rev_page_title">推廣者<em>審核</em></div>
+    <div class="page-sub" data-i18n="rev_sub">審核推廣者申請，通過後對方可查看素材庫</div>
     <div id="review-list"></div>
-    <div id="review-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px">目前沒有待審核的申請</div>
+    <div id="review-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px" data-i18n="rev_empty">目前沒有待審核的申請</div>
   </div>
 
   <!-- ── REDEEM ── -->
   <div class="page" id="page-redeem">
-    <div class="page-title">積分<em>兌換管理</em></div>
-    <div class="page-sub">新增或刪除會員可兌換的項目，變更即時同步至會員端</div>
+    <div class="page-title" data-i18n-html="rdm_page_title">積分<em>兌換管理</em></div>
+    <div class="page-sub" data-i18n="rdm_sub">新增或刪除會員可兌換的項目，變更即時同步至會員端</div>
     <div id="redm-grid-wrap"></div>
     <div class="add-redm-form">
-      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px">＋ 新增兌換項目</div>
+      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px" data-i18n="rdm_form_title">＋ 新增兌換項目</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div><label class="f-label">項目名稱</label><input class="f-input" id="new-redm-name" type="text" placeholder="如：東京住宿折扣券"></div>
-        <div><label class="f-label">所需積分</label><input class="f-input" id="new-redm-pts" type="number" min="1" placeholder="500"></div>
+        <div><label class="f-label" data-i18n="rdm_label_name">項目名稱</label><input class="f-input" id="new-redm-name" type="text" placeholder="如：東京住宿折扣券" data-i18n-ph="rdm_name_ph"></div>
+        <div><label class="f-label" data-i18n="rdm_label_pts">所需積分</label><input class="f-input" id="new-redm-pts" type="number" min="1" placeholder="500"></div>
       </div>
-      <div style="margin-bottom:12px"><label class="f-label">說明文字</label><textarea class="f-textarea" id="new-redm-desc" placeholder="兌換說明、使用方式、有效期限等"></textarea></div>
-      <button class="btn-sm btn-solid-gold" onclick="addRedemption()">新增兌換項目</button>
+      <div style="margin-bottom:12px"><label class="f-label" data-i18n="rdm_label_desc">說明文字</label><textarea class="f-textarea" id="new-redm-desc" placeholder="兌換說明、使用方式、有效期限等" data-i18n-ph="rdm_desc_ph"></textarea></div>
+      <button class="btn-sm btn-solid-gold" onclick="addRedemption()" data-i18n="rdm_btn_add">新增兌換項目</button>
     </div>
   </div>
 
   <!-- ── MATERIALS ── -->
   <div class="page" id="page-materials">
-    <div class="page-title">推廣素材<em>管理</em></div>
-    <div class="page-sub">管理推廣者可見的應用工具與連結</div>
+    <div class="page-title" data-i18n-html="mat_page_title">推廣素材<em>管理</em></div>
+    <div class="page-sub" data-i18n="mat_sub">管理推廣者可見的應用工具與連結</div>
     <div class="mat-mgr-grid" id="mat-mgr-grid"></div>
     <div class="add-mat-form">
-      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px">＋ 新增素材連結</div>
+      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:16px" data-i18n="mat_form_title">＋ 新增素材連結</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div><label class="f-label">素材名稱</label><input class="f-input" id="new-mat-name" type="text" placeholder="如：心理測驗 APP"></div>
-        <div><label class="f-label">類型</label>
+        <div><label class="f-label" data-i18n="mat_label_name">素材名稱</label><input class="f-input" id="new-mat-name" type="text" placeholder="如：心理測驗 APP" data-i18n-ph="mat_name_ph"></div>
+        <div><label class="f-label" data-i18n="mat_label_type">類型</label>
           <select class="f-select" id="new-mat-type">
             <option>心理測驗</option><option>文章素材</option><option>落地頁</option><option>影片</option><option>其他</option>
           </select>
         </div>
       </div>
-      <div style="margin-bottom:12px"><label class="f-label">連結 URL</label><input class="f-input" id="new-mat-url" type="url" placeholder="https://..."></div>
-      <div style="margin-bottom:12px"><label class="f-label">說明</label><textarea class="f-textarea" id="new-mat-desc" style="min-height:60px"></textarea></div>
-      <button class="btn-sm btn-solid-gold" onclick="addMaterial()">新增素材</button>
+      <div style="margin-bottom:12px"><label class="f-label" data-i18n="mat_label_url">連結 URL</label><input class="f-input" id="new-mat-url" type="url" placeholder="https://..."></div>
+      <div style="margin-bottom:12px"><label class="f-label" data-i18n="mat_label_desc">說明</label><textarea class="f-textarea" id="new-mat-desc" style="min-height:60px"></textarea></div>
+      <button class="btn-sm btn-solid-gold" onclick="addMaterial()" data-i18n="mat_btn_add">新增素材</button>
     </div>
   </div>
 
   <!-- ── PERFORMANCE ── -->
   <div class="page" id="page-perf">
-    <div class="page-title">推廣<em>績效</em></div>
-    <div class="page-sub">各推廣者邀請碼使用量與實際推薦人數追蹤</div>
+    <div class="page-title" data-i18n-html="perf_page_title">推廣<em>績效</em></div>
+    <div class="page-sub" data-i18n="perf_sub">各推廣者邀請碼使用量與實際推薦人數追蹤</div>
     <div id="perf-list"></div>
-    <div id="perf-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px">目前沒有已通過的推廣者</div>
+    <div id="perf-empty" style="display:none;padding:48px;text-align:center;color:var(--muted);font-size:13px" data-i18n="perf_empty">目前沒有已通過的推廣者</div>
   </div>
 
 </main>
@@ -487,11 +506,11 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
 <!-- ── CONFIRM MODAL ── -->
 <div class="overlay" id="confirm-modal">
   <div class="modal">
-    <div class="modal-hd"><div class="modal-title" id="confirm-title">確認操作</div><button class="modal-close" onclick="closeConfirm()">✕</button></div>
+    <div class="modal-hd"><div class="modal-title" id="confirm-title" data-i18n="confirm_title">確認操作</div><button class="modal-close" onclick="closeConfirm()">✕</button></div>
     <div class="modal-body"><p style="font-size:13px;color:var(--text);line-height:1.8" id="confirm-msg"></p></div>
     <div class="modal-footer">
-      <button class="btn-sm btn-outline-gold" onclick="closeConfirm()">取消</button>
-      <button class="btn-sm btn-solid-gold" id="confirm-ok">確認</button>
+      <button class="btn-sm btn-outline-gold" onclick="closeConfirm()" data-i18n="confirm_cancel">取消</button>
+      <button class="btn-sm btn-solid-gold" id="confirm-ok" data-i18n="confirm_ok">確認</button>
     </div>
   </div>
 </div>
@@ -630,22 +649,22 @@ function renderOverview() {
       <td class="td-name">${u.name}</td><td class="td-email">${email}</td>
       <td>${roleBadge(u.role)}</td><td class="td-pts">${(u.points||0).toLocaleString()}</td>
       <td>${u.joined||'—'}</td>
-      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">查看</button></td>
+      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">${t('mem_btn_view')}</button></td>
     </tr>`;
   }).join('');
 
   const pendingEmails = emails.filter(e => USERS[e].role === 'affiliate_pending');
   const qp = document.getElementById('quick-pending');
   if (!pendingEmails.length) {
-    qp.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">目前無待審核申請</div>`;
+    qp.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">${t('ov_no_pending')}</div>`;
   } else {
     qp.innerHTML = pendingEmails.map(email => {
       const u = USERS[email];
       return `<div class="review-card">
         <div class="rc-top"><div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>${roleBadge(u.role)}</div>
         <div class="rc-actions">
-          <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">✓ 通過</button>
-          <button class="btn-sm btn-outline-red" onclick="goPage('review')">前往審核頁面</button>
+          <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">${t('ov_btn_approve')}</button>
+          <button class="btn-sm btn-outline-red" onclick="goPage('review')">${t('ov_btn_go_review')}</button>
         </div>
       </div>`;
     }).join('');
@@ -664,7 +683,7 @@ function renderMembers() {
     return matchTerm && matchRole;
   });
   if (!emails.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">沒有符合的會員</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">${t('mem_empty')}</td></tr>`;
     return;
   }
   tbody.innerHTML = emails.map(email => {
@@ -674,7 +693,7 @@ function renderMembers() {
       <td>${roleBadge(u.role)}</td><td class="td-pts">${(u.points||0).toLocaleString()}</td>
       <td style="font-size:12px;color:var(--muted)">${u.line||'—'}</td>
       <td style="font-size:12px;color:var(--muted)">${u.joined||'—'}</td>
-      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">詳情</button></td>
+      <td><button class="btn-sm btn-outline-gold" onclick="event.stopPropagation();openDrawer('${email}')">${t('mem_btn_detail')}</button></td>
     </tr>`;
   }).join('');
 }
@@ -697,53 +716,53 @@ function openDrawer(email) {
       <div class="tl-dot ${h.type}"></div>
       <div class="tl-date">${h.date}</div>
       <div><div class="tl-desc">${h.desc}</div><div class="tl-note">${h.note||''}</div></div>
-      <div><div class="tl-amt ${h.type}">${h.type==='plus'?'+':'−'}${h.amt}</div><div class="tl-bal">餘 ${h.bal}</div></div>
-    </div>`).join('') || '<div style="font-size:13px;color:var(--muted);padding:12px 0">暫無紀錄</div>';
+      <div><div class="tl-amt ${h.type}">${h.type==='plus'?'+':'−'}${h.amt}</div><div class="tl-bal">${t('dr_hist_bal')} ${h.bal}</div></div>
+    </div>`).join('') || `<div style="font-size:13px;color:var(--muted);padding:12px 0">${t('dr_hist_empty')}</div>`;
 
   document.getElementById('drawer-body').innerHTML = `
     <div class="dr-section">
-      <div class="dr-section-title">基本資料</div>
+      <div class="dr-section-title">${t('dr_sec_basic')}</div>
       <div class="dr-row">
-        <div class="dr-field"><label>姓名</label><span>${u.name}</span></div>
+        <div class="dr-field"><label>${t('dr_field_name')}</label><span>${u.name}</span></div>
         <div class="dr-field"><label>Email</label><span style="font-size:11px">${email}</span></div>
-        <div class="dr-field"><label>LINE ID</label><span>${u.lineId||u.line||'—'}</span></div>
-        <div class="dr-field"><label>加入日期</label><span>${u.joined||'—'}</span></div>
+        <div class="dr-field"><label>${t('dr_field_line')}</label><span>${u.lineId||u.line||'—'}</span></div>
+        <div class="dr-field"><label>${t('dr_field_joined')}</label><span>${u.joined||'—'}</span></div>
       </div>
-      <div class="dr-field"><label>目前身份</label><div style="margin-top:6px">${roleBadge(u.role)}</div></div>
+      <div class="dr-field"><label>${t('dr_field_role')}</label><div style="margin-top:6px">${roleBadge(u.role)}</div></div>
     </div>
     <div class="dr-section">
-      <div class="dr-section-title">身份權限修改</div>
+      <div class="dr-section-title">${t('dr_sec_role')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','member')">設為一般會員</button>
-        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','affiliate_approved')">設為推廣者（通過）</button>
-        <button class="btn-sm" style="border:1px solid rgba(100,149,237,.4);color:#6495ED;background:none" onclick="setRole('${email}','manager')">設為次級管理員</button>
-        <button class="btn-sm btn-outline-red"  onclick="setRole('${email}','suspended')">停權</button>
+        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','member')">${t('dr_role_member')}</button>
+        <button class="btn-sm btn-outline-gold" onclick="setRole('${email}','affiliate_approved')">${t('dr_role_aff')}</button>
+        <button class="btn-sm" style="border:1px solid rgba(100,149,237,.4);color:#6495ED;background:none" onclick="setRole('${email}','manager')">${t('dr_role_mgr')}</button>
+        <button class="btn-sm btn-outline-red"  onclick="setRole('${email}','suspended')">${t('dr_role_suspend')}</button>
       </div>
     </div>
     <div class="dr-section">
-      <div class="dr-section-title">積分管理</div>
+      <div class="dr-section-title">${t('dr_sec_pts')}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
         <span style="font-size:28px;font-family:'Cormorant Garamond',serif;color:var(--gold)">${(u.points||0).toLocaleString()}</span>
-        <span style="font-size:12px;color:var(--muted)">目前積分</span>
+        <span style="font-size:12px;color:var(--muted)">${t('dr_pts_label')}</span>
       </div>
       <div class="pts-adjust">
         <div class="pts-adj-row">
-          <div><label class="f-label">操作</label>
+          <div><label class="f-label">${t('dr_pts_op_label')}</label>
             <select class="f-select" id="dr-pts-type" style="padding:8px">
-              <option value="plus">＋ 新增</option><option value="minus">－ 扣除</option>
+              <option value="plus">${t('dr_pts_plus')}</option><option value="minus">${t('dr_pts_minus')}</option>
             </select>
           </div>
-          <div><label class="f-label">點數</label>
+          <div><label class="f-label">${t('dr_pts_amt_label')}</label>
             <input class="f-input" id="dr-pts-amt" type="number" min="1" placeholder="500" style="padding:8px">
           </div>
         </div>
-        <div style="margin-bottom:10px"><label class="f-label">備註說明</label>
-          <input class="f-input" id="dr-pts-note" type="text" placeholder="如：諮詢費儲值" style="padding:8px">
+        <div style="margin-bottom:10px"><label class="f-label">${t('dr_pts_note_label')}</label>
+          <input class="f-input" id="dr-pts-note" type="text" placeholder="${t('dr_pts_note_ph')}" style="padding:8px">
         </div>
-        <button class="btn-sm btn-solid-gold" onclick="adjustPoints('${email}')">執行積分操作</button>
+        <button class="btn-sm btn-solid-gold" onclick="adjustPoints('${email}')">${t('dr_btn_pts')}</button>
       </div>
     </div>
-    <div class="dr-section"><div class="dr-section-title">積分明細</div>${tlHtml}</div>`;
+    <div class="dr-section"><div class="dr-section-title">${t('dr_sec_hist')}</div>${tlHtml}</div>`;
 
   document.getElementById('drawer-overlay').classList.add('show');
   document.getElementById('member-drawer').classList.add('show');
@@ -759,13 +778,13 @@ async function adjustPoints(email) {
   const type = document.getElementById('dr-pts-type').value;
   const amt  = parseInt(document.getElementById('dr-pts-amt').value) || 0;
   const note = document.getElementById('dr-pts-note').value || '管理者操作';
-  if (!amt) { toast('請輸入點數'); return; }
+  if (!amt) { toast(t('toast_pts_req')); return; }
   const u = USERS[email];
-  if (type === 'minus' && amt > (u.points || 0)) { toast('扣除點數不能超過現有積分'); return; }
+  if (type === 'minus' && amt > (u.points || 0)) { toast(t('toast_pts_over')); return; }
   const newBal    = type === 'plus' ? (u.points||0) + amt : (u.points||0) - amt;
   const newHistory = [{ date:today(), desc:note, note:'管理者手動', type, amt, bal:newBal }, ...(u.history||[])];
   await db.collection('users').doc(email).update({ points: newBal, history: newHistory });
-  toast(`✅ 已${type==='plus'?'新增':'扣除'} ${amt} 點，餘額 ${newBal}`);
+  toast(t('pts_adjusted_toast', type, amt, newBal));
 }
 
 async function setRole(email, role) {
@@ -773,13 +792,13 @@ async function setRole(email, role) {
     const managerCount = Object.values(USERS).filter(u => u.role === 'manager').length;
     const isAlreadyManager = USERS[email]?.role === 'manager';
     if (!isAlreadyManager && managerCount >= 5) {
-      toast('⚠️ 次級管理員已達上限（5人），請先移除一位再新增');
+      toast(t('toast_mgr_limit'));
       return;
     }
   }
-  confirm2(`確定要將 ${USERS[email].name} 的身份改為「${roleLabel(role)}」嗎？`, async () => {
+  confirm2(t('role_change_confirm', USERS[email].name, roleLabel(role)), async () => {
     await db.collection('users').doc(email).update({ role });
-    toast(`✅ 身份已更新為：${roleLabel(role)}`);
+    toast(t('role_changed_toast', roleLabel(role)));
   });
 }
 
@@ -798,15 +817,15 @@ function renderReview() {
     return `<div class="review-card" id="rc-${email.replace(/[@.]/g,'_')}">
       <div class="rc-top"><div><div class="rc-name">${u.name}</div><div class="rc-email">${email}</div></div>${roleBadge(u.role)}</div>
       <div class="rc-fields">
-        <div class="rc-field"><label>申請日期</label><span>${app.date||u.joined||'—'}</span></div>
-        <div class="rc-field"><label>推廣管道</label><span>${app.channel||'—'}</span></div>
-        <div class="rc-field"><label>預計推薦量</label><span>${app.volume||'—'} 人/月</span></div>
+        <div class="rc-field"><label>${t('rev_field_date')}</label><span>${app.date||u.joined||'—'}</span></div>
+        <div class="rc-field"><label>${t('rev_field_channel')}</label><span>${app.channel||'—'}</span></div>
+        <div class="rc-field"><label>${t('rev_field_volume')}</label><span>${app.volume||'—'} ${t('rev_volume_unit')}</span></div>
       </div>
       <div class="rc-actions">
-        <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">✓ 通過審核</button>
-        <input class="f-input rc-reject-input" id="reject-reason-${email.replace(/[@.]/g,'_')}" placeholder="填寫拒絕原因（選填）">
-        <button class="btn-sm btn-outline-red" onclick="toggleRejectInput('${email}')">✕ 拒絕</button>
-        <button class="btn-sm btn-outline-gold" style="display:none" id="reject-confirm-${email.replace(/[@.]/g,'_')}" onclick="rejectAffiliate('${email}')">確認拒絕</button>
+        <button class="btn-sm btn-outline-green" onclick="approveAffiliate('${email}')">${t('rev_btn_approve')}</button>
+        <input class="f-input rc-reject-input" id="reject-reason-${email.replace(/[@.]/g,'_')}" placeholder="${t('rev_reject_ph')}">
+        <button class="btn-sm btn-outline-red" onclick="toggleRejectInput('${email}')">${t('rev_btn_reject')}</button>
+        <button class="btn-sm btn-outline-gold" style="display:none" id="reject-confirm-${email.replace(/[@.]/g,'_')}" onclick="rejectAffiliate('${email}')">${t('rev_btn_reject_confirm')}</button>
       </div>
     </div>`;
   }).join('');
@@ -819,14 +838,14 @@ function genAffCode() {
 }
 
 async function approveAffiliate(email) {
-  confirm2(`確定通過 ${USERS[email].name} 的推廣者申請？`, async () => {
+  confirm2(t('aff_approve_confirm', USERS[email].name), async () => {
     // Generate unique affCode
     let affCode;
     const existingCodes = new Set(Object.values(USERS).map(u => u.affCode).filter(Boolean));
     do { affCode = genAffCode(); } while (existingCodes.has(affCode));
 
     await db.collection('users').doc(email).update({ role: 'affiliate_approved', affCode });
-    toast(`✅ 已通過 ${USERS[email].name} 的申請，邀請碼：${affCode}`);
+    toast(t('aff_approved_toast', USERS[email].name, affCode));
   });
 }
 
@@ -840,13 +859,13 @@ function toggleRejectInput(email) {
 
 async function rejectAffiliate(email) {
   const key    = email.replace(/[@.]/g, '_');
-  const reason = document.getElementById('reject-reason-' + key).value || '不符合申請資格';
-  confirm2(`確定拒絕 ${USERS[email].name} 的申請？原因：${reason}`, async () => {
+  const reason = document.getElementById('reject-reason-' + key).value || t('aff_reject_default_reason');
+  confirm2(t('aff_reject_confirm', USERS[email].name, reason), async () => {
     await db.collection('users').doc(email).update({
       role: 'member',
       affApp: firebase.firestore.FieldValue.delete()
     });
-    toast('已拒絕申請');
+    toast(t('aff_rejected_toast'));
   });
 }
 
@@ -869,27 +888,26 @@ function renderPerf() {
     const u = USERS[email];
     const referrals = u.referrals || [];
     const monthCount = referrals.filter(r => (r.date || '').startsWith(thisMonth)).length;
-    const affCode = u.affCode || '（尚未分配）';
     const refLink = u.affCode ? `${portalBase}?ref=${u.affCode}` : '—';
     return `<div class="perf-aff-card">
       <div class="perf-aff-top">
         <div><div class="perf-aff-name">${u.name}</div><div class="perf-aff-email">${email}</div></div>
         <div style="display:flex;align-items:center;gap:10px">
           ${u.affCode
-            ? `<div class="perf-code-badge" style="cursor:pointer" onclick="navigator.clipboard.writeText('${u.affCode}');toast('已複製邀請碼 ${u.affCode}')" title="點擊複製邀請碼">${u.affCode}</div>`
-            : `<div class="perf-code-badge" style="color:var(--muted);border-color:rgba(184,150,90,.2)">尚未分配</div>
-               <button class="btn-sm btn-solid-gold" onclick="assignAffCode('${email}')">生成推薦碼</button>`
+            ? `<div class="perf-code-badge" style="cursor:pointer" onclick="navigator.clipboard.writeText('${u.affCode}');toast(t('toast_code_copied')+' ${u.affCode}')" title="${t('toast_code_copied')}">${u.affCode}</div>`
+            : `<div class="perf-code-badge" style="color:var(--muted);border-color:rgba(184,150,90,.2)">${t('perf_no_code')}</div>
+               <button class="btn-sm btn-solid-gold" onclick="assignAffCode('${email}')">${t('perf_btn_gen')}</button>`
           }
         </div>
       </div>
-      ${u.affCode ? `<div class="perf-aff-link" onclick="navigator.clipboard.writeText('${refLink}');toast('已複製推廣連結')" title="點擊複製推廣連結">🔗 ${refLink}</div>` : ''}
+      ${u.affCode ? `<div class="perf-aff-link" onclick="navigator.clipboard.writeText('${refLink}');toast(t('toast_link_copied'))" title="${t('toast_link_copied')}">🔗 ${refLink}</div>` : ''}
       <div class="perf-stats-row">
-        <div class="perf-stat-box"><div class="psb-n">${referrals.length}</div><div class="psb-l">總推薦人數</div></div>
-        <div class="perf-stat-box"><div class="psb-n">${monthCount}</div><div class="psb-l">本月新增</div></div>
-        <div class="perf-stat-box"><div class="psb-n">${u.affApp?.channel || '—'}</div><div class="psb-l">推廣管道</div></div>
+        <div class="perf-stat-box"><div class="psb-n">${referrals.length}</div><div class="psb-l">${t('perf_stat_total')}</div></div>
+        <div class="perf-stat-box"><div class="psb-n">${monthCount}</div><div class="psb-l">${t('perf_stat_month')}</div></div>
+        <div class="perf-stat-box"><div class="psb-n">${u.affApp?.channel || '—'}</div><div class="psb-l">${t('perf_stat_channel')}</div></div>
       </div>
       ${referrals.length ? `<div class="perf-ref-list">
-        <div class="ref-list-hd">推薦明細</div>
+        <div class="ref-list-hd">${t('perf_ref_hd')}</div>
         ${[...referrals].reverse().map(r => `
           <div class="perf-ref-item">
             <span>${r.name || '—'} <span style="color:var(--muted)">${r.email || ''}</span></span>
@@ -905,7 +923,7 @@ async function assignAffCode(email) {
   let affCode;
   do { affCode = genAffCode(); } while (existingCodes.has(affCode));
   await db.collection('users').doc(email).update({ affCode });
-  toast(`✅ 已為 ${USERS[email]?.name} 生成推薦碼：${affCode}`);
+  toast(t('code_assigned_toast', USERS[email]?.name, affCode));
 }
 
 // ══════════════════════════════════════════
@@ -915,17 +933,17 @@ function renderRedemptions() {
   const wrap = document.getElementById('redm-grid-wrap');
   if (!wrap) return;
   if (!REDEMPTIONS.length) {
-    wrap.innerHTML = '<div style="padding:32px;text-align:center;font-size:13px;color:var(--muted)">尚無兌換項目，請使用下方表單新增</div>';
+    wrap.innerHTML = `<div style="padding:32px;text-align:center;font-size:13px;color:var(--muted)">${t('rdm_empty')}</div>`;
     return;
   }
   wrap.innerHTML = `<div class="redm-grid">${REDEMPTIONS.map(r => `
     <div class="redm-card">
       <div class="redm-hd">
         <div class="redm-name">${r.name}</div>
-        <button class="btn-sm btn-outline-red" onclick="deleteRedemption('${r.id}')">刪除</button>
+        <button class="btn-sm btn-outline-red" onclick="deleteRedemption('${r.id}')">${t('rdm_btn_delete')}</button>
       </div>
       <div class="redm-desc">${r.desc || '—'}</div>
-      <div><span class="redm-pts">${(r.points||0).toLocaleString()}</span><span class="redm-pts-unit">POINTS</span></div>
+      <div><span class="redm-pts">${(r.points||0).toLocaleString()}</span><span class="redm-pts-unit">${t('rdm_pts_unit')}</span></div>
     </div>`).join('')}</div>`;
 }
 
@@ -933,18 +951,18 @@ async function addRedemption() {
   const name  = document.getElementById('new-redm-name').value.trim();
   const pts   = parseInt(document.getElementById('new-redm-pts').value) || 0;
   const desc  = document.getElementById('new-redm-desc').value.trim();
-  if (!name || pts < 1) { toast('請填寫名稱與積分數量'); return; }
+  if (!name || pts < 1) { toast(t('toast_rdm_req')); return; }
   await db.collection('redemptions').add({ name, points: pts, desc, order: Date.now() });
   document.getElementById('new-redm-name').value = '';
   document.getElementById('new-redm-pts').value  = '';
   document.getElementById('new-redm-desc').value = '';
-  toast('✅ 兌換項目已新增');
+  toast(t('toast_rdm_added'));
 }
 
 async function deleteRedemption(id) {
-  confirm2('確定要刪除此兌換項目？刪除後會員端將立即移除。', async () => {
+  confirm2(t('rdm_delete_confirm'), async () => {
     await db.collection('redemptions').doc(id).delete();
-    toast('已刪除兌換項目');
+    toast(t('toast_rdm_deleted'));
   });
 }
 
@@ -953,21 +971,21 @@ function renderMaterials() {
     <div class="mat-mgr-card">
       <div class="mmc-hd">
         <div><div class="mmc-name">${m.name}</div><div class="mmc-type">${m.type}</div></div>
-        <span class="badge ${m.status==='active'?'badge-approved':'badge-pending'}">${m.status==='active'?'已上線':'即將推出'}</span>
+        <span class="badge ${m.status==='active'?'badge-approved':'badge-pending'}">${m.status==='active'?t('mat_status_active'):t('mat_status_coming')}</span>
       </div>
       <div class="mmc-url">${m.url||'（尚未設定連結）'}</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${m.desc}</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">編輯連結</button>
-        <button class="btn-sm btn-outline-red"  onclick="deleteMat('${m.id}')">刪除</button>
+        <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">${t('mat_btn_edit')}</button>
+        <button class="btn-sm btn-outline-red"  onclick="deleteMat('${m.id}')">${t('mat_btn_delete')}</button>
       </div>
       <div class="mmc-edit-form" id="edit-${m.id}">
-        <div class="f-group" style="margin-top:12px"><label class="f-label">更新連結</label>
+        <div class="f-group" style="margin-top:12px"><label class="f-label">${t('mat_edit_label')}</label>
           <input class="f-input" id="edit-url-${m.id}" type="url" value="${m.url}" placeholder="https://...">
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn-sm btn-solid-gold"  onclick="saveMatUrl('${m.id}')">儲存</button>
-          <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">取消</button>
+          <button class="btn-sm btn-solid-gold"  onclick="saveMatUrl('${m.id}')">${t('mat_btn_save')}</button>
+          <button class="btn-sm btn-outline-gold" onclick="toggleEdit('${m.id}')">${t('mat_btn_cancel')}</button>
         </div>
       </div>
     </div>`).join('');
@@ -978,13 +996,13 @@ function toggleEdit(id) { document.getElementById('edit-' + id).classList.toggle
 async function saveMatUrl(id) {
   const val = document.getElementById('edit-url-' + id).value.trim();
   await db.collection('materials').doc(id).update({ url: val, status: val ? 'active' : 'coming' });
-  toast('✅ 連結已更新');
+  toast(t('toast_mat_saved'));
 }
 
 async function deleteMat(id) {
-  confirm2('確定要刪除此素材項目嗎？', async () => {
+  confirm2(t('mat_delete_confirm'), async () => {
     await db.collection('materials').doc(id).delete();
-    toast('已刪除素材');
+    toast(t('toast_mat_deleted'));
   });
 }
 
@@ -993,12 +1011,12 @@ async function addMaterial() {
   const type = document.getElementById('new-mat-type').value;
   const url  = document.getElementById('new-mat-url').value.trim();
   const desc = document.getElementById('new-mat-desc').value.trim();
-  if (!name) { toast('請輸入素材名稱'); return; }
+  if (!name) { toast(t('toast_mat_req')); return; }
   await db.collection('materials').add({ name, type, url, desc, status: url ? 'active' : 'coming', order: Date.now() });
   document.getElementById('new-mat-name').value = '';
   document.getElementById('new-mat-url').value  = '';
   document.getElementById('new-mat-desc').value = '';
-  toast('✅ 已新增素材');
+  toast(t('toast_mat_added'));
 }
 
 // ══════════════════════════════════════════
@@ -1006,16 +1024,16 @@ async function addMaterial() {
 // ══════════════════════════════════════════
 function roleBadge(role) {
   const map = {
-    member:             `<span class="badge badge-member"><span class="badge-dot"></span>一般會員</span>`,
-    affiliate_pending:  `<span class="badge badge-pending"><span class="badge-dot"></span>推廣者審核中</span>`,
-    affiliate_approved: `<span class="badge badge-approved"><span class="badge-dot"></span>推廣者已通過</span>`,
-    suspended:          `<span class="badge badge-suspended"><span class="badge-dot"></span>已停權</span>`,
-    manager:            `<span class="badge" style="background:rgba(100,149,237,.12);border:1px solid rgba(100,149,237,.3);color:#6495ED"><span class="badge-dot"></span>次級管理員</span>`,
+    member:             `<span class="badge badge-member"><span class="badge-dot"></span>${t('role_member')}</span>`,
+    affiliate_pending:  `<span class="badge badge-pending"><span class="badge-dot"></span>${t('role_pending')}</span>`,
+    affiliate_approved: `<span class="badge badge-approved"><span class="badge-dot"></span>${t('role_approved')}</span>`,
+    suspended:          `<span class="badge badge-suspended"><span class="badge-dot"></span>${t('role_suspended')}</span>`,
+    manager:            `<span class="badge" style="background:rgba(100,149,237,.12);border:1px solid rgba(100,149,237,.3);color:#6495ED"><span class="badge-dot"></span>${t('role_manager')}</span>`,
   };
   return map[role] || `<span class="badge badge-member">${role}</span>`;
 }
 function roleLabel(r) {
-  return { member:'一般會員', affiliate_pending:'推廣者（審核中）', affiliate_approved:'推廣者（已通過）', suspended:'停權', manager:'次級管理員' }[r] || r;
+  return { member:t('role_label_member'), affiliate_pending:t('role_label_pending'), affiliate_approved:t('role_label_approved'), suspended:t('role_label_suspended'), manager:t('role_label_manager') }[r] || r;
 }
 
 let _confirmCb = null;
@@ -1045,9 +1063,269 @@ function syncReviewBadge() {
 }
 
 // ══════════════════════════════════════════
+//  I18N — Language System
+// ══════════════════════════════════════════
+const LANG = {
+  zh: {
+    login_sub:'ADMIN PORTAL — 管理後台',login_err:'帳號或密碼錯誤，請重試。',
+    login_label_email:'管理者帳號',login_label_pw:'密碼',login_btn:'進入管理後台',
+    tab_overview:'總覽',tab_members:'會員',tab_review:'審核',tab_materials:'素材',tab_logout:'登出',
+    sb_main:'主要功能',nav_overview:'數據總覽',sb_member:'會員管理',nav_members:'所有會員',
+    nav_review:'推廣者審核',sb_content:'內容管理',nav_redeem:'兌換管理',nav_materials:'素材管理',
+    nav_perf:'推廣績效',nav_logout:'登出後台',
+    ov_page_title:'數據<em>總覽</em>',ov_sub:'Japan Night Concierge — 後台管理系統',
+    ov_stat_total:'會員總數',ov_stat_pending:'待審核申請',ov_stat_pts:'積分發放總量',ov_stat_affs:'推廣者（通過）',
+    ov_recent:'最近加入會員',ov_see_all:'查看全部',ov_pending_hd:'待審核推廣者申請',ov_go_review:'前往審核',
+    ov_no_pending:'目前無待審核申請',ov_btn_approve:'✓ 通過',ov_btn_go_review:'前往審核頁面',
+    mem_page_title:'所有<em>會員</em>',mem_sub:'點選會員列可查看詳細資料與積分操作',
+    mem_search_ph:'搜尋姓名或 Email…',
+    mem_filter_all:'全部身份',mem_filter_member:'一般會員',mem_filter_manager:'次級管理員',
+    mem_filter_aff_pending:'推廣者（審核中）',mem_filter_aff_approved:'推廣者（通過）',mem_filter_suspended:'停權',
+    mem_col_name:'姓名',mem_col_email:'Email',mem_col_role:'身份',mem_col_pts:'積分',
+    mem_col_line:'LINE',mem_col_joined:'加入日期',mem_col_action:'操作',
+    mem_empty:'沒有符合的會員',mem_btn_detail:'詳情',mem_btn_view:'查看',
+    rev_page_title:'推廣者<em>審核</em>',rev_sub:'審核推廣者申請，通過後對方可查看素材庫',
+    rev_empty:'目前沒有待審核的申請',
+    rev_field_date:'申請日期',rev_field_channel:'推廣管道',rev_field_volume:'預計推薦量',rev_volume_unit:'人/月',
+    rev_btn_approve:'✓ 通過審核',rev_btn_reject:'✕ 拒絕',rev_reject_ph:'填寫拒絕原因（選填）',rev_btn_reject_confirm:'確認拒絕',
+    rdm_page_title:'積分<em>兌換管理</em>',rdm_sub:'新增或刪除會員可兌換的項目，變更即時同步至會員端',
+    rdm_empty:'尚無兌換項目，請使用下方表單新增',rdm_btn_delete:'刪除',rdm_pts_unit:'POINTS',
+    rdm_form_title:'＋ 新增兌換項目',rdm_label_name:'項目名稱',rdm_label_pts:'所需積分',rdm_label_desc:'說明文字',
+    rdm_name_ph:'如：東京住宿折扣券',rdm_pts_ph:'500',rdm_desc_ph:'兌換說明、使用方式、有效期限等',rdm_btn_add:'新增兌換項目',
+    mat_page_title:'推廣素材<em>管理</em>',mat_sub:'管理推廣者可見的應用工具與連結',
+    mat_status_active:'已上線',mat_status_coming:'即將推出',
+    mat_btn_edit:'編輯連結',mat_btn_delete:'刪除',mat_btn_save:'儲存',mat_btn_cancel:'取消',mat_edit_label:'更新連結',
+    mat_form_title:'＋ 新增素材連結',mat_label_name:'素材名稱',mat_label_type:'類型',mat_label_url:'連結 URL',mat_label_desc:'說明',
+    mat_name_ph:'如：心理測驗 APP',mat_type_quiz:'心理測驗',mat_type_article:'文章素材',
+    mat_type_landing:'落地頁',mat_type_video:'影片',mat_type_other:'其他',mat_btn_add:'新增素材',
+    perf_page_title:'推廣<em>績效</em>',perf_sub:'各推廣者邀請碼使用量與實際推薦人數追蹤',
+    perf_empty:'目前沒有已通過的推廣者',perf_btn_gen:'生成推薦碼',
+    perf_stat_total:'總推薦人數',perf_stat_month:'本月新增',perf_stat_channel:'推廣管道',
+    perf_ref_hd:'推薦明細',perf_no_code:'尚未分配',
+    dr_sec_basic:'基本資料',dr_sec_role:'身份權限修改',dr_sec_pts:'積分管理',dr_sec_hist:'積分明細',
+    dr_field_name:'姓名',dr_field_email:'Email',dr_field_line:'LINE ID',dr_field_joined:'加入日期',dr_field_role:'目前身份',
+    dr_role_member:'設為一般會員',dr_role_aff:'設為推廣者（通過）',dr_role_mgr:'設為次級管理員',dr_role_suspend:'停權',
+    dr_pts_label:'目前積分',dr_pts_op_label:'操作',dr_pts_amt_label:'點數',dr_pts_note_label:'備註說明',
+    dr_pts_plus:'＋ 新增',dr_pts_minus:'－ 扣除',dr_pts_note_ph:'如：諮詢費儲值',dr_btn_pts:'執行積分操作',
+    dr_hist_empty:'暫無紀錄',dr_hist_bal:'餘',
+    confirm_title:'確認操作',confirm_cancel:'取消',confirm_ok:'確認',
+    role_member:'一般會員',role_pending:'推廣者審核中',role_approved:'推廣者已通過',role_suspended:'已停權',role_manager:'次級管理員',
+    role_label_member:'一般會員',role_label_pending:'推廣者（審核中）',role_label_approved:'推廣者（已通過）',role_label_suspended:'停權',role_label_manager:'次級管理員',
+    toast_pts_req:'請輸入點數',toast_pts_over:'扣除點數不能超過現有積分',
+    toast_mgr_limit:'⚠️ 次級管理員已達上限（5人），請先移除一位再新增',
+    toast_rdm_req:'請填寫名稱與積分數量',toast_rdm_added:'✅ 兌換項目已新增',toast_rdm_deleted:'已刪除兌換項目',
+    toast_mat_req:'請輸入素材名稱',toast_mat_added:'✅ 已新增素材',toast_mat_deleted:'已刪除素材',toast_mat_saved:'✅ 連結已更新',
+    toast_code_copied:'已複製邀請碼',toast_link_copied:'已複製推廣連結',
+    aff_approve_confirm:(n)=>`確定通過 ${n} 的推廣者申請？`,
+    aff_approved_toast:(n,c)=>`✅ 已通過 ${n} 的申請，邀請碼：${c}`,
+    aff_reject_confirm:(n,r)=>`確定拒絕 ${n} 的申請？原因：${r}`,
+    aff_reject_default_reason:'不符合申請資格',aff_rejected_toast:'已拒絕申請',
+    role_change_confirm:(n,l)=>`確定要將 ${n} 的身份改為「${l}」嗎？`,
+    role_changed_toast:(l)=>`✅ 身份已更新為：${l}`,
+    pts_adjusted_toast:(type,amt,bal)=>`✅ 已${type==='plus'?'新增':'扣除'} ${amt} 點，餘額 ${bal}`,
+    code_assigned_toast:(n,c)=>`✅ 已為 ${n} 生成推薦碼：${c}`,
+    rdm_delete_confirm:'確定要刪除此兌換項目？刪除後會員端將立即移除。',
+    mat_delete_confirm:'確定要刪除此素材項目嗎？',
+  },
+  en: {
+    login_sub:'ADMIN PORTAL',login_err:'Incorrect email or password, please try again.',
+    login_label_email:'Admin Email',login_label_pw:'Password',login_btn:'Enter Admin Portal',
+    tab_overview:'Overview',tab_members:'Members',tab_review:'Review',tab_materials:'Materials',tab_logout:'Logout',
+    sb_main:'Main',nav_overview:'Dashboard',sb_member:'Members',nav_members:'All Members',
+    nav_review:'Affiliate Review',sb_content:'Content',nav_redeem:'Redemptions',nav_materials:'Materials',
+    nav_perf:'Performance',nav_logout:'Logout',
+    ov_page_title:'<em>Dashboard</em>',ov_sub:'Japan Night Concierge — Admin System',
+    ov_stat_total:'Total Members',ov_stat_pending:'Pending Review',ov_stat_pts:'Points Issued',ov_stat_affs:'Affiliates (Active)',
+    ov_recent:'Recent Members',ov_see_all:'View All',ov_pending_hd:'Pending Affiliate Applications',ov_go_review:'Go to Review',
+    ov_no_pending:'No pending applications',ov_btn_approve:'✓ Approve',ov_btn_go_review:'Go to Review',
+    mem_page_title:'All <em>Members</em>',mem_sub:'Click a row to view details and manage points',
+    mem_search_ph:'Search by name or email…',
+    mem_filter_all:'All Roles',mem_filter_member:'Member',mem_filter_manager:'Manager',
+    mem_filter_aff_pending:'Affiliate (Pending)',mem_filter_aff_approved:'Affiliate (Active)',mem_filter_suspended:'Suspended',
+    mem_col_name:'Name',mem_col_email:'Email',mem_col_role:'Role',mem_col_pts:'Points',
+    mem_col_line:'LINE',mem_col_joined:'Joined',mem_col_action:'Action',
+    mem_empty:'No matching members',mem_btn_detail:'Details',mem_btn_view:'View',
+    rev_page_title:'Affiliate <em>Review</em>',rev_sub:'Review affiliate applications; approved users can access the materials library',
+    rev_empty:'No pending applications',
+    rev_field_date:'Applied',rev_field_channel:'Channel',rev_field_volume:'Est. Volume',rev_volume_unit:'refs/mo',
+    rev_btn_approve:'✓ Approve',rev_btn_reject:'✕ Reject',rev_reject_ph:'Rejection reason (optional)',rev_btn_reject_confirm:'Confirm Reject',
+    rdm_page_title:'Redemption <em>Mgmt</em>',rdm_sub:'Add or remove redeemable items; changes sync to the member portal instantly',
+    rdm_empty:'No items yet — use the form below to add one',rdm_btn_delete:'Delete',rdm_pts_unit:'POINTS',
+    rdm_form_title:'＋ Add Item',rdm_label_name:'Item Name',rdm_label_pts:'Points Required',rdm_label_desc:'Description',
+    rdm_name_ph:'e.g. Tokyo Hotel Discount',rdm_pts_ph:'500',rdm_desc_ph:'Details, usage, expiry, etc.',rdm_btn_add:'Add Item',
+    mat_page_title:'Materials <em>Mgmt</em>',mat_sub:'Manage tools and links visible to affiliates',
+    mat_status_active:'Active',mat_status_coming:'Coming Soon',
+    mat_btn_edit:'Edit URL',mat_btn_delete:'Delete',mat_btn_save:'Save',mat_btn_cancel:'Cancel',mat_edit_label:'Update URL',
+    mat_form_title:'＋ Add Material',mat_label_name:'Name',mat_label_type:'Type',mat_label_url:'URL',mat_label_desc:'Description',
+    mat_name_ph:'e.g. Personality Quiz App',mat_type_quiz:'Quiz',mat_type_article:'Article',
+    mat_type_landing:'Landing Page',mat_type_video:'Video',mat_type_other:'Other',mat_btn_add:'Add Material',
+    perf_page_title:'Affiliate <em>Performance</em>',perf_sub:'Track referral code usage and referral counts per affiliate',
+    perf_empty:'No approved affiliates yet',perf_btn_gen:'Generate Code',
+    perf_stat_total:'Total Referrals',perf_stat_month:'This Month',perf_stat_channel:'Channel',
+    perf_ref_hd:'Referral Details',perf_no_code:'Not Assigned',
+    dr_sec_basic:'Basic Info',dr_sec_role:'Role & Permissions',dr_sec_pts:'Points Mgmt',dr_sec_hist:'Points History',
+    dr_field_name:'Name',dr_field_email:'Email',dr_field_line:'LINE ID',dr_field_joined:'Joined',dr_field_role:'Current Role',
+    dr_role_member:'Set as Member',dr_role_aff:'Set as Affiliate',dr_role_mgr:'Set as Manager',dr_role_suspend:'Suspend',
+    dr_pts_label:'Current Points',dr_pts_op_label:'Action',dr_pts_amt_label:'Amount',dr_pts_note_label:'Note',
+    dr_pts_plus:'＋ Add',dr_pts_minus:'－ Deduct',dr_pts_note_ph:'e.g. Consultation deposit',dr_btn_pts:'Apply',
+    dr_hist_empty:'No history yet',dr_hist_bal:'Bal.',
+    confirm_title:'Confirm',confirm_cancel:'Cancel',confirm_ok:'Confirm',
+    role_member:'Member',role_pending:'Affiliate (Pending)',role_approved:'Affiliate (Active)',role_suspended:'Suspended',role_manager:'Manager',
+    role_label_member:'Member',role_label_pending:'Affiliate (Pending)',role_label_approved:'Affiliate (Active)',role_label_suspended:'Suspended',role_label_manager:'Manager',
+    toast_pts_req:'Please enter point amount',toast_pts_over:'Deduction exceeds current balance',
+    toast_mgr_limit:'⚠️ Manager limit (5) reached. Remove one first.',
+    toast_rdm_req:'Please fill in name and points',toast_rdm_added:'✅ Item added',toast_rdm_deleted:'Item deleted',
+    toast_mat_req:'Please enter material name',toast_mat_added:'✅ Material added',toast_mat_deleted:'Material deleted',toast_mat_saved:'✅ URL updated',
+    toast_code_copied:'Code copied',toast_link_copied:'Link copied',
+    aff_approve_confirm:(n)=>`Approve affiliate application for ${n}?`,
+    aff_approved_toast:(n,c)=>`✅ Approved ${n}. Code: ${c}`,
+    aff_reject_confirm:(n,r)=>`Reject ${n}'s application? Reason: ${r}`,
+    aff_reject_default_reason:'Does not meet requirements',aff_rejected_toast:'Application rejected',
+    role_change_confirm:(n,l)=>`Change ${n}'s role to "${l}"?`,
+    role_changed_toast:(l)=>`✅ Role updated to: ${l}`,
+    pts_adjusted_toast:(type,amt,bal)=>`✅ ${type==='plus'?'Added':'Deducted'} ${amt} pts. Balance: ${bal}`,
+    code_assigned_toast:(n,c)=>`✅ Generated code for ${n}: ${c}`,
+    rdm_delete_confirm:'Delete this item? It will be removed from the member portal immediately.',
+    mat_delete_confirm:'Delete this material?',
+  },
+  ja: {
+    login_sub:'ADMIN PORTAL — 管理画面',login_err:'メールアドレスまたはパスワードが違います。',
+    login_label_email:'管理者メール',login_label_pw:'パスワード',login_btn:'管理画面に入る',
+    tab_overview:'概要',tab_members:'会員',tab_review:'審査',tab_materials:'素材',tab_logout:'ログアウト',
+    sb_main:'メイン',nav_overview:'ダッシュボード',sb_member:'会員管理',nav_members:'全会員',
+    nav_review:'アフィリエイト審査',sb_content:'コンテンツ',nav_redeem:'交換管理',nav_materials:'素材管理',
+    nav_perf:'成果分析',nav_logout:'ログアウト',
+    ov_page_title:'ダッシュ<em>ボード</em>',ov_sub:'Japan Night Concierge — 管理システム',
+    ov_stat_total:'総会員数',ov_stat_pending:'審査待ち',ov_stat_pts:'発行ポイント数',ov_stat_affs:'アフィリエイター（承認済）',
+    ov_recent:'最近の会員',ov_see_all:'全て見る',ov_pending_hd:'審査待ちアフィリエイト申請',ov_go_review:'審査ページへ',
+    ov_no_pending:'審査待ちの申請はありません',ov_btn_approve:'✓ 承認',ov_btn_go_review:'審査ページへ',
+    mem_page_title:'全<em>会員</em>',mem_sub:'行をクリックして詳細とポイント操作',
+    mem_search_ph:'名前またはメールで検索…',
+    mem_filter_all:'全ロール',mem_filter_member:'一般会員',mem_filter_manager:'マネージャー',
+    mem_filter_aff_pending:'アフィリエイター（審査中）',mem_filter_aff_approved:'アフィリエイター（承認済）',mem_filter_suspended:'停止',
+    mem_col_name:'氏名',mem_col_email:'メール',mem_col_role:'ロール',mem_col_pts:'ポイント',
+    mem_col_line:'LINE',mem_col_joined:'登録日',mem_col_action:'操作',
+    mem_empty:'該当する会員がいません',mem_btn_detail:'詳細',mem_btn_view:'表示',
+    rev_page_title:'アフィリエイト<em>審査</em>',rev_sub:'アフィリエイト申請を審査します。承認後、素材ライブラリにアクセス可能',
+    rev_empty:'審査待ちの申請はありません',
+    rev_field_date:'申請日',rev_field_channel:'チャネル',rev_field_volume:'想定紹介数',rev_volume_unit:'人/月',
+    rev_btn_approve:'✓ 承認',rev_btn_reject:'✕ 却下',rev_reject_ph:'却下理由（任意）',rev_btn_reject_confirm:'却下確認',
+    rdm_page_title:'ポイント<em>交換管理</em>',rdm_sub:'会員が交換できるアイテムを追加・削除。変更はリアルタイムで反映',
+    rdm_empty:'交換アイテムがまだありません。下のフォームで追加してください',rdm_btn_delete:'削除',rdm_pts_unit:'POINTS',
+    rdm_form_title:'＋ アイテムを追加',rdm_label_name:'アイテム名',rdm_label_pts:'必要ポイント',rdm_label_desc:'説明',
+    rdm_name_ph:'例：東京ホテル割引券',rdm_pts_ph:'500',rdm_desc_ph:'交換内容、利用方法、有効期限など',rdm_btn_add:'アイテムを追加',
+    mat_page_title:'素材<em>管理</em>',mat_sub:'アフィリエイターに公開するツールとリンクを管理',
+    mat_status_active:'公開中',mat_status_coming:'近日公開',
+    mat_btn_edit:'URL編集',mat_btn_delete:'削除',mat_btn_save:'保存',mat_btn_cancel:'キャンセル',mat_edit_label:'URL更新',
+    mat_form_title:'＋ 素材を追加',mat_label_name:'素材名',mat_label_type:'種類',mat_label_url:'URL',mat_label_desc:'説明',
+    mat_name_ph:'例：性格診断アプリ',mat_type_quiz:'性格診断',mat_type_article:'記事素材',
+    mat_type_landing:'ランディングページ',mat_type_video:'動画',mat_type_other:'その他',mat_btn_add:'素材を追加',
+    perf_page_title:'アフィリエイト<em>成果</em>',perf_sub:'招待コードの利用数と実際の紹介人数を追跡',
+    perf_empty:'承認済みのアフィリエイターはまだいません',perf_btn_gen:'コード生成',
+    perf_stat_total:'総紹介数',perf_stat_month:'今月',perf_stat_channel:'チャネル',
+    perf_ref_hd:'紹介詳細',perf_no_code:'未割当',
+    dr_sec_basic:'基本情報',dr_sec_role:'ロール・権限',dr_sec_pts:'ポイント管理',dr_sec_hist:'ポイント履歴',
+    dr_field_name:'氏名',dr_field_email:'メール',dr_field_line:'LINE ID',dr_field_joined:'登録日',dr_field_role:'現在のロール',
+    dr_role_member:'一般会員に設定',dr_role_aff:'アフィリエイター（承認済）に設定',dr_role_mgr:'マネージャーに設定',dr_role_suspend:'停止',
+    dr_pts_label:'現在のポイント',dr_pts_op_label:'操作',dr_pts_amt_label:'数量',dr_pts_note_label:'備考',
+    dr_pts_plus:'＋ 追加',dr_pts_minus:'－ 差引',dr_pts_note_ph:'例：コンサル費チャージ',dr_btn_pts:'実行',
+    dr_hist_empty:'履歴がありません',dr_hist_bal:'残',
+    confirm_title:'確認',confirm_cancel:'キャンセル',confirm_ok:'確認',
+    role_member:'一般会員',role_pending:'アフィリエイター（審査中）',role_approved:'アフィリエイター（承認済）',role_suspended:'停止',role_manager:'マネージャー',
+    role_label_member:'一般会員',role_label_pending:'アフィリエイター（審査中）',role_label_approved:'アフィリエイター（承認済）',role_label_suspended:'停止',role_label_manager:'マネージャー',
+    toast_pts_req:'ポイント数を入力してください',toast_pts_over:'差引ポイントが残高を超えています',
+    toast_mgr_limit:'⚠️ マネージャー上限（5人）に達しています。先に削除してください',
+    toast_rdm_req:'名前とポイントを入力してください',toast_rdm_added:'✅ アイテムを追加しました',toast_rdm_deleted:'アイテムを削除しました',
+    toast_mat_req:'素材名を入力してください',toast_mat_added:'✅ 素材を追加しました',toast_mat_deleted:'素材を削除しました',toast_mat_saved:'✅ URLを更新しました',
+    toast_code_copied:'招待コードをコピーしました',toast_link_copied:'紹介リンクをコピーしました',
+    aff_approve_confirm:(n)=>`${n} のアフィリエイト申請を承認しますか？`,
+    aff_approved_toast:(n,c)=>`✅ ${n} を承認しました。コード：${c}`,
+    aff_reject_confirm:(n,r)=>`${n} の申請を却下しますか？理由：${r}`,
+    aff_reject_default_reason:'要件を満たしていません',aff_rejected_toast:'申請を却下しました',
+    role_change_confirm:(n,l)=>`${n} のロールを「${l}」に変更しますか？`,
+    role_changed_toast:(l)=>`✅ ロールを${l}に更新しました`,
+    pts_adjusted_toast:(type,amt,bal)=>`✅ ${amt}ポイントを${type==='plus'?'追加':'差引'}しました。残高：${bal}`,
+    code_assigned_toast:(n,c)=>`✅ ${n} に招待コードを発行：${c}`,
+    rdm_delete_confirm:'この交換アイテムを削除しますか？会員ポータルからも即時削除されます。',
+    mat_delete_confirm:'この素材を削除しますか？',
+  }
+};
+
+let currentLang = localStorage.getItem('jnc-admin-lang') || 'zh';
+
+function t(key, ...args) {
+  const d = LANG[currentLang] || LANG.zh;
+  const v = d[key] !== undefined ? d[key] : (LANG.zh[key] || key);
+  return typeof v === 'function' ? v(...args) : v;
+}
+
+function applyLang() {
+  const d = LANG[currentLang] || LANG.zh;
+  document.documentElement.lang = { zh:'zh-TW', en:'en', ja:'ja' }[currentLang] || 'zh-TW';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n; if (d[k] !== undefined) el.textContent = d[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml; if (d[k] !== undefined) el.innerHTML = d[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.dataset.i18nPh; if (d[k] !== undefined) el.placeholder = d[k];
+  });
+  // filter select options
+  const sel = document.getElementById('role-filter');
+  if (sel) {
+    const opts = sel.querySelectorAll('option');
+    ['mem_filter_all','mem_filter_member','mem_filter_manager','mem_filter_aff_pending','mem_filter_aff_approved','mem_filter_suspended']
+      .forEach((k, i) => { if (opts[i] && d[k]) opts[i].textContent = d[k]; });
+  }
+  // material type select options
+  const matType = document.getElementById('new-mat-type');
+  if (matType) {
+    const opts = matType.querySelectorAll('option');
+    ['mat_type_quiz','mat_type_article','mat_type_landing','mat_type_video','mat_type_other']
+      .forEach((k, i) => { if (opts[i] && d[k]) opts[i].textContent = d[k]; });
+  }
+  // re-render dynamic content
+  if (Object.keys(USERS).length) { renderOverview(); renderMembers(); renderReview(); renderPerf(); }
+  renderRedemptions();
+  renderMaterials();
+  localStorage.setItem('jnc-admin-lang', currentLang);
+}
+
+function toggleAdminLang() {
+  document.getElementById('admin-lang-wrap').classList.toggle('open');
+}
+
+function setAdminLang(lang, label) {
+  currentLang = lang;
+  document.getElementById('admin-lang-current').textContent = label;
+  document.getElementById('admin-lang-wrap').classList.remove('open');
+  document.querySelectorAll('.sb-lang-opt').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes(`'${lang}'`));
+  });
+  applyLang();
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('admin-lang-wrap');
+  if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
+
+// ══════════════════════════════════════════
 //  PWA
 // ══════════════════════════════════════════
 window.addEventListener('load', () => {
+  // Restore saved language label
+  const savedLang = localStorage.getItem('jnc-admin-lang');
+  if (savedLang && savedLang !== 'zh') {
+    const labelMap = { en: 'EN', ja: '日本語' };
+    document.getElementById('admin-lang-current').textContent = labelMap[savedLang] || savedLang;
+    document.querySelectorAll('.sb-lang-opt').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('onclick').includes(`'${savedLang}'`));
+    });
+  }
+  // Apply saved language on load
+  applyLang();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
       .then(() => console.log('[JNC Admin] SW registered'))
