@@ -388,7 +388,7 @@ td{padding:12px 16px;font-size:13px;color:var(--text);vertical-align:middle}
       <div class="stat-card" data-ico="👤"><div class="sc-label" data-i18n="ov_stat_total">會員總數</div><div class="sc-num" id="ov-total">4</div><div class="sc-change">↑ 今日新增 1</div></div>
       <div class="stat-card" data-ico="⏳"><div class="sc-label" data-i18n="ov_stat_pending">待審核申請</div><div class="sc-num" id="ov-pending" style="color:var(--amber)">2</div><div class="sc-change" style="color:var(--amber)">需要處理</div></div>
       <div class="stat-card" data-ico="✦"><div class="sc-label" data-i18n="ov_stat_pts">積分發放總量</div><div class="sc-num" id="ov-pts">2,900</div><div class="sc-change">本月 + 1,400</div></div>
-      <div class="stat-card" data-ico="🌸"><div class="sc-label" data-i18n="ov_stat_affs">推廣者（通過）</div><div class="sc-num" id="ov-affs" style="color:var(--green)">1</div><div class="sc-change" style="color:var(--green)">1 待審核</div></div>
+      <div class="stat-card" data-ico="🌸"><div class="sc-label" data-i18n="ov_stat_affs">推廣者（通過）</div><div class="sc-num" id="ov-affs" style="color:var(--green)">1</div><div class="sc-change" style="color:var(--green)" id="ov-affs-pending">1 待審核</div></div>
     </div>
 
     <!-- recent members -->
@@ -641,6 +641,8 @@ function renderOverview() {
     s + (USERS[e].history || []).filter(h => h.type === 'plus').reduce((a, h) => a + h.amt, 0), 0);
   document.getElementById('ov-pts').textContent  = totalPts.toLocaleString();
   document.getElementById('ov-affs').textContent = emails.filter(e => USERS[e].role === 'affiliate_approved').length;
+  const pendingEl = document.getElementById('ov-affs-pending');
+  if (pendingEl) pendingEl.textContent = pending + ' ' + t('ov_affs_pending');
 
   const sorted = [...emails].sort((a, b) => (USERS[b].joined || '').localeCompare(USERS[a].joined || ''));
   document.getElementById('recent-tbody').innerHTML = sorted.slice(0, 4).map(email => {
@@ -1076,7 +1078,7 @@ const LANG = {
     ov_page_title:'數據<em>總覽</em>',ov_sub:'Japan Night Concierge — 後台管理系統',
     ov_stat_total:'會員總數',ov_stat_pending:'待審核申請',ov_stat_pts:'積分發放總量',ov_stat_affs:'推廣者（通過）',
     ov_recent:'最近加入會員',ov_see_all:'查看全部',ov_pending_hd:'待審核推廣者申請',ov_go_review:'前往審核',
-    ov_no_pending:'目前無待審核申請',ov_btn_approve:'✓ 通過',ov_btn_go_review:'前往審核頁面',
+    ov_no_pending:'目前無待審核申請',ov_affs_pending:'待審核',ov_btn_approve:'✓ 通過',ov_btn_go_review:'前往審核頁面',
     mem_page_title:'所有<em>會員</em>',mem_sub:'點選會員列可查看詳細資料與積分操作',
     mem_search_ph:'搜尋姓名或 Email…',
     mem_filter_all:'全部身份',mem_filter_member:'一般會員',mem_filter_manager:'次級管理員',
@@ -1137,7 +1139,7 @@ const LANG = {
     ov_page_title:'<em>Dashboard</em>',ov_sub:'Japan Night Concierge — Admin System',
     ov_stat_total:'Total Members',ov_stat_pending:'Pending Review',ov_stat_pts:'Points Issued',ov_stat_affs:'Affiliates (Active)',
     ov_recent:'Recent Members',ov_see_all:'View All',ov_pending_hd:'Pending Affiliate Applications',ov_go_review:'Go to Review',
-    ov_no_pending:'No pending applications',ov_btn_approve:'✓ Approve',ov_btn_go_review:'Go to Review',
+    ov_no_pending:'No pending applications',ov_affs_pending:'pending',ov_btn_approve:'✓ Approve',ov_btn_go_review:'Go to Review',
     mem_page_title:'All <em>Members</em>',mem_sub:'Click a row to view details and manage points',
     mem_search_ph:'Search by name or email…',
     mem_filter_all:'All Roles',mem_filter_member:'Member',mem_filter_manager:'Manager',
@@ -1198,7 +1200,7 @@ const LANG = {
     ov_page_title:'ダッシュ<em>ボード</em>',ov_sub:'Japan Night Concierge — 管理システム',
     ov_stat_total:'総会員数',ov_stat_pending:'審査待ち',ov_stat_pts:'発行ポイント数',ov_stat_affs:'アフィリエイター（承認済）',
     ov_recent:'最近の会員',ov_see_all:'全て見る',ov_pending_hd:'審査待ちアフィリエイト申請',ov_go_review:'審査ページへ',
-    ov_no_pending:'審査待ちの申請はありません',ov_btn_approve:'✓ 承認',ov_btn_go_review:'審査ページへ',
+    ov_no_pending:'審査待ちの申請はありません',ov_affs_pending:'審査待ち',ov_btn_approve:'✓ 承認',ov_btn_go_review:'審査ページへ',
     mem_page_title:'全<em>会員</em>',mem_sub:'行をクリックして詳細とポイント操作',
     mem_search_ph:'名前またはメールで検索…',
     mem_filter_all:'全ロール',mem_filter_member:'一般会員',mem_filter_manager:'マネージャー',
